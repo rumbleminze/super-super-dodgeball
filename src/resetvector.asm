@@ -34,7 +34,9 @@ nmi:
     ; LDA #$A0
     ; PHA
     ; PLB
-
+    PHA
+    PHX
+    PHY
     JSL snes_nmi
     ; jump to NES NMI
     CLC
@@ -51,7 +53,10 @@ nmi:
     LDA #$3A
     STA BANK_SWITCH_LB
 
-
+    
+    PLY
+    PLX
+    PLA
     JML [BANK_SWITCH_LB]
     bit RDNMI
     inc nmi_count

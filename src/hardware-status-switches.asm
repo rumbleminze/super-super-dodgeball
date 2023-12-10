@@ -34,14 +34,27 @@ handle_ppu_control_value:
     RTL
 
 update_HV_OFFS:
-    LDA NES_H_SCROLL    
+    RTL
+    LDA NES_H_SCROLL 
+    STA BG1HOFS   
     STZ BG1HOFS
-    STA BG1HOFS
 
     LDA NES_V_SCROLL
-    STZ BG1VOFS
     STA BG1VOFS ; $2005
+    STZ BG1VOFS
 
+    RTL
+
+reset_HV_OFFS_to_0:
+    RTL
+    STZ BG1HOFS
+    STZ BG1HOFS
+    STZ BG1VOFS
+    STZ BG1VOFS
+
+    ; probably should also set the HB here, but I don't think we'll
+    ; actually need it (maybe)
+    
     RTL
 
 
@@ -139,6 +152,8 @@ set_vm_increment_mode_1:
     RTL
 
 
+
+
 ; PpuMask controls lots of stuff
 ; but we almost always only care about
 ; a few bits.  Specifically 
@@ -171,7 +186,7 @@ change_ppu_mask_status:
     STA INIDISP
     STA INIDISP_STATE
 
-    ; LDA PPU_MASK_STATUS
+    LDA PPU_MASK_STATUS
     AND #$18
     BNE :+
     STZ TM
@@ -217,4 +232,30 @@ set_background_addr:
 ; generally done via 
 ;
 set_background_chr_addr:
+    RTL
+
+set_vm_incr_to_1_and_store:
+    LDA PPU_CONTROL_STATUS
+    AND #$FB
+    STA PPU_CONTROL_STATUS
+
+    LDA VMAIN_STATUS
+    AND #$FC
+    STA VMAIN_STATUS
+    STA VMAIN
+
+    RTL
+
+set_vm_incr_to_1_and_reset_nametable_and_store:
+    LDA PPU_CONTROL_STATUS
+    AND #$FC
+    STA PPU_CONTROL_STATUS
+
+    LDA VMAIN_STATUS
+    AND #$FC
+    STA VMAIN_STATUS
+    STA VMAIN
+
+    ; STZ H/V offset HB here if we need to
+
     RTL

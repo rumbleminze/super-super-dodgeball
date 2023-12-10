@@ -44,6 +44,7 @@ initialize_registers:
 
   LDA #$80
   STA VMAIN
+  STA VMAIN_STATUS
   STZ VMADDL
   STZ VMADDH
   STZ M7SEL
@@ -123,8 +124,8 @@ initialize_registers:
   ; lda #0000
 	; sta BG12NBA
   ; JSR clearvm
-  ; JSR zero_oam  
-  ; JSR dma_oam_table
+  JSR zero_oam  
+  JSR dma_oam_table
 
   STA OBSEL
   LDA #$11
@@ -154,7 +155,7 @@ initialize_registers:
   LDA #$01
   STA MEMSEL
   ; Enable overscan mode to approximate NES draw positions
-  LDA #$04
+  LDA #$00
   STA SETINI
 
 
@@ -202,8 +203,11 @@ clearvm:
 	RTS
 
 snes_nmi:
-  ; JSR check_for_chr_bankswap
-  ; JSR check_for_second_table_chr_bankswap
+  JSL check_for_chr_bankswap
+  JSL check_for_second_table_chr_bankswap
+  JSR dma_oam_table  
+  JSL hud_hdma_setup
+  JSL translate_nes_sprites_to_oam  
   RTL
 
 bankswap_table:
@@ -254,7 +258,14 @@ check_for_chr_bankswap:
   LDA CHR_BANK_SWITCH_P1
   CMP #$FF
   BEQ :-
+  CMP CHR_BANK_CURR_P1
+  BEQ :-
 
+  LDA CHR_BANK_SWITCH_P1
+  STA CHR_BANK_CURR_P1
+  ; LDA #$FF
+  ; STA CHR_BANK_SWITCH_P1
+  
   PHB
   LDA #$A0
   PHA
@@ -263,17 +274,13 @@ check_for_chr_bankswap:
   ; looks like we need to switch CHR Banks
   ; we fake this by DMA'ing tiles from the right tileset
   ; multiply by 3 to get the offset
-  LDA CHR_BANK_SWITCH_P1
-  STA CHR_BANK_CURR_P1
+  LDA CHR_BANK_CURR_P1
   ASL A
-  ADC CHR_BANK_SWITCH_P1
+  ADC CHR_BANK_CURR_P1
   TAY
 
   LDA #$80
   STA VMAIN
-
-  LDA #$FF
-  STA CHR_BANK_SWITCH_P1
 
   LDA #$01
   STA DMAP0
@@ -319,6 +326,13 @@ check_for_second_table_chr_bankswap:
   LDA CHR_BANK_SWITCH_P2
   CMP #$FF
   BEQ :-
+  CMP CHR_BANK_CURR_P2
+  BEQ :-
+
+  LDA CHR_BANK_SWITCH_P2
+  STA CHR_BANK_CURR_P2
+  ; LDA #$FF
+  ; STA CHR_BANK_SWITCH_P1
 
   PHB
   LDA #$A0
@@ -328,17 +342,13 @@ check_for_second_table_chr_bankswap:
   ; looks like we need to switch CHR Banks
   ; we fake this by DMA'ing tiles from the right tileset
   ; multiply by 3 to get the offset
-  LDA CHR_BANK_SWITCH_P2
-  STA CHR_BANK_CURR_P2
+  LDA CHR_BANK_CURR_P2
   ASL A
-  ADC CHR_BANK_SWITCH_P2
+  ADC CHR_BANK_CURR_P2
   TAY
 
   LDA #$80
   STA VMAIN
-
-  LDA #$FF
-  STA CHR_BANK_SWITCH_P2
 
   LDA #$01
   STA DMAP1
@@ -454,6 +464,126 @@ skip_writing_four_empties:
 
   RTL
 
+
+load_sprite_palette:
+  PHX
+  PHY
+  PHA
+  PHB
+  PLA
+  STA SPRITE_LOOKUP_DB
+  PHA
+
+  setAXY8
+
+  LDA #$A0
+  PHA
+  PLB
+  LDY #$00
+  LDA #$80
+  STA CGADD
+
+  LDA $02
+  STA SPRITE_LOOKUP_LB
+  LDA $03
+  STA SPRITE_LOOKUP_HB
+
+: LDA [SPRITE_LOOKUP_LB],Y
+  ASL A
+  TAX
+  LDA palette_lookup, X
+  STA CGDATA
+  LDA palette_lookup + 1, X
+  STA CGDATA
+  INY  
+  CPY #$04
+  BNE :-
+; every 4 we need to write a bunch of empty palette entries
+  JSR write_empty_palette_row
+  JSR write_empty_palette_row
+  JSR write_empty_palette_row
+
+  LDY #$00
+  LDA $04
+  STA SPRITE_LOOKUP_LB
+  LDA $05
+  STA SPRITE_LOOKUP_HB
+
+: LDA [SPRITE_LOOKUP_LB],Y
+  ASL A
+  TAX
+  LDA palette_lookup, X
+  STA CGDATA
+  LDA palette_lookup + 1, X
+  STA CGDATA
+  INY  
+  CPY #$04
+  BNE :-
+
+; every 4 we need to write a bunch of empty palette entries
+  JSR write_empty_palette_row
+  JSR write_empty_palette_row
+  JSR write_empty_palette_row
+
+  LDY #$00
+  LDA $06
+  STA SPRITE_LOOKUP_LB
+  LDA $07
+  STA SPRITE_LOOKUP_HB
+
+: LDA [SPRITE_LOOKUP_LB],Y
+  ASL A
+  TAX
+  LDA palette_lookup, X
+  STA CGDATA
+  LDA palette_lookup + 1, X
+  STA CGDATA
+  INY  
+  CPY #$04
+  BNE :-
+  
+; every 4 we need to write a bunch of empty palette entries
+  JSR write_empty_palette_row
+  JSR write_empty_palette_row
+  JSR write_empty_palette_row
+
+  LDY #$00
+  LDA $08
+  STA SPRITE_LOOKUP_LB
+  LDA $09
+  STA SPRITE_LOOKUP_HB
+
+: LDA [SPRITE_LOOKUP_LB],Y
+  ASL A
+  TAX
+  LDA palette_lookup, X
+  STA CGDATA
+  LDA palette_lookup + 1, X
+  STA CGDATA
+  INY  
+  CPY #$04
+  BNE :-
+  
+; every 4 we need to write a bunch of empty palette entries
+  JSR write_empty_palette_row
+  JSR write_empty_palette_row
+  JSR write_empty_palette_row
+
+  ; after 16 entries we write an empty set of palettes
+  jsr write_empty_palette_set
+  jsr write_empty_palette_set
+  jsr write_empty_palette_set
+  jsr write_empty_palette_set  
+
+  PLB
+  PLA
+  PLY
+  PLX
+
+  RTL
+
+
+
 write_empty_palette_set:
   JSR write_empty_palette_row
   JSR write_empty_palette_row
@@ -471,5 +601,9 @@ write_empty_palette_row:
   STZ CGDATA
   STZ CGDATA
   RTS
+
   .include "palette_lookup.asm"
   .include "hardware-status-switches.asm"
+  .include "sprites.asm"
+  .include "hud-hdma.asm"
+  .include "attributes.asm"
