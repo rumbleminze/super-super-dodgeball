@@ -58,8 +58,6 @@ nmi:
     PLX
     PLA
     JML [BANK_SWITCH_LB]
-    bit RDNMI
-    inc nmi_count
 
 _rti:
     rti

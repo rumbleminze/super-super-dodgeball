@@ -41,6 +41,7 @@ initialize_registers:
   STZ BG4VOFS
 
   STZ ACTIVE_NES_BANK
+  STZ SNES_OAM_TRANSLATE_NEEDED
 
   LDA #$80
   STA VMAIN
@@ -127,6 +128,7 @@ initialize_registers:
   JSR zero_oam  
   JSR dma_oam_table
 
+  LDA #$04
   STA OBSEL
   LDA #$11
   STA BG12NBA
@@ -155,6 +157,7 @@ initialize_registers:
   LDA #$01
   STA MEMSEL
   ; Enable overscan mode to approximate NES draw positions
+  ; LDA #$04
   LDA #$00
   STA SETINI
 
@@ -176,7 +179,49 @@ initialize_registers:
 
   ; LDA #$A1
   ; PHA
-  ; PLB 
+  ; PLB   
+  LDA #$0C
+  STA CHR_BANK_BANK_TO_LOAD
+  LDA #$00
+  STA CHR_BANK_TARGET_BANK
+  JSL load_chr_table_to_vm
+    
+  LDA #$1B
+  STA CHR_BANK_BANK_TO_LOAD
+  LDA #$01
+  STA CHR_BANK_TARGET_BANK
+  JSL load_chr_table_to_vm
+    
+  LDA #$0A
+  STA CHR_BANK_BANK_TO_LOAD
+  LDA #$03
+  STA CHR_BANK_TARGET_BANK
+  JSL load_chr_table_to_vm
+
+  LDA #$0D
+  STA CHR_BANK_BANK_TO_LOAD
+  LDA #$04
+  STA CHR_BANK_TARGET_BANK
+  JSL load_chr_table_to_vm
+  
+  LDA #$0B
+  STA CHR_BANK_BANK_TO_LOAD
+  LDA #$05
+  STA CHR_BANK_TARGET_BANK
+  JSL load_chr_table_to_vm
+  
+  LDA #$19
+  STA CHR_BANK_BANK_TO_LOAD
+  LDA #$06
+  STA CHR_BANK_TARGET_BANK
+  JSL load_chr_table_to_vm
+
+  LDA #$1B
+  STA CHR_BANK_BANK_TO_LOAD
+  LDA #$07
+  STA CHR_BANK_TARGET_BANK
+  JSL load_chr_table_to_vm
+
   JSR clearvm
   JSL check_for_chr_bankswap
   JSL check_for_second_table_chr_bankswap
@@ -203,11 +248,13 @@ clearvm:
 	RTS
 
 snes_nmi:
-  JSL check_for_chr_bankswap
-  JSL check_for_second_table_chr_bankswap
   JSR dma_oam_table  
   JSL hud_hdma_setup
-  JSL translate_nes_sprites_to_oam  
+  JSR translate_nes_sprites_to_oam
+  RTL
+
+snes_busy_loop:
+  JSR translate_nes_sprites_to_oam
   RTL
 
 bankswap_table:
@@ -388,26 +435,190 @@ check_for_second_table_chr_bankswap:
 
   RTL
 
+bankswitch_bg_chr_data:
+  PHB
+  LDA #$A0
+  PHA
+  PLB
 
-; read_chr_data:
-;   PHB
-;   LDA $56
-;   STA CHR_BANK_READ_HB
-;   CMP $10
-;   BCS :+
-;   LDA CHR_BANK_CURR_P1
-;   BRA :++
-; : LDA CHR_BANK_CURR_P2
-; : PHA
-;   PLB
-;   LDA $55
-;   STA CHR_BANK_READ_LB
+  ; bgs are on 1000, 3000, 5000, 7000.
+  LDY #$01
+: LDA CHR_BANK_LOADED_TABLE, y
+  CMP CHR_BANK_BANK_TO_LOAD
+  BEQ switch_to_y
+  CPY #$07
+  BEQ new_bg_bank
+  INY
+  INY
+  BRA :-
 
-;   LDY #$00
-;   LDA (CHR_BANK_READ_LB), Y
+  RTL
+
+new_bg_bank:
+
+  LDA CHR_BANK_BANK_TO_LOAD
   
+  CMP #$19
+  BPL new_data_bank
+
+
+
   PLB
   RTL
+
+new_data_bank:
+
+  STZ CHR_BANK_TARGET_BANK
+  INC CHR_BANK_TARGET_BANK
+  JSR load_chr_table_to_vm
+
+  PLB
+  RTL
+
+bankswitch_obj_chr_data:
+  STZ NES_H_SCROLL
+  PHB
+  LDA #$A0
+  PHA
+  PLB
+
+  LDY #$00
+: LDA CHR_BANK_LOADED_TABLE, y
+  CMP CHR_BANK_BANK_TO_LOAD
+  BEQ switch_to_y
+  CPY #$06
+  BEQ new_obj_bank
+  INY
+  INY
+  BRA :-
+
+new_obj_bank:
+  ; todo load the bank into 0000, 4000, or 6000
+  LDA CHR_BANK_BANK_TO_LOAD
+  TAY
+  LDA target_obj_banks, Y
+  STA CHR_BANK_TARGET_BANK
+  PHA
+  jsl load_chr_table_to_vm
+
+  LDA CHR_BANK_BANK_TO_LOAD
+  CMP #$0C
+  BEQ :+
+  SEC
+  SBC #$0B
+  bmi :+
+  SBC #$0F
+  bpl :+
+
+  ; this is between 0A and 19, so we load 17 too
+  LDA #$17
+  STA CHR_BANK_BANK_TO_LOAD
+  LDA #$04
+  STA CHR_BANK_TARGET_BANK
+  jsl load_chr_table_to_vm
+
+: PLA
+  TAY
+  bra switch_to_y
+
+switch_to_y:
+  ; our target bank is loaded at #$y000
+  ; so just update our obj definition to use that for sprites
+  TYA
+  LSR ; for updating obsel, we have to halve y.  
+  STA OBSEL
+  PLB
+  RTL
+
+
+load_chr_table_to_vm:
+  LDA CHR_BANK_TARGET_BANK
+  TAY
+  LDA CHR_BANK_BANK_TO_LOAD
+  STA CHR_BANK_LOADED_TABLE, Y
+  
+  JSR dma_chr_to_vm
+
+  RTL
+
+dma_chr_to_vm:
+  PHB
+  LDA #$A0
+  PHA
+  PLB
+
+  ; looks like we need to switch CHR Banks
+  ; we fake this by DMA'ing tiles from the right tileset
+  ; multiply by 3 to get the offset
+  LDA CHR_BANK_BANK_TO_LOAD
+  ASL A
+  ADC CHR_BANK_BANK_TO_LOAD
+  TAY
+
+  LDA #$80
+  STA VMAIN
+
+  LDA #$01
+  STA DMAP1
+
+  LDA #$18
+  STA BBAD1
+
+  ; source LB
+  LDA bankswap_table, Y
+  STA A1T1L
+
+  ; source HB
+  INY
+  LDA bankswap_table, y
+  STA A1T1H
+
+  ; source DB
+  INY
+  LDA bankswap_table, y
+  STA A1B1
+
+  ; 0x2000 bytes
+  LDA #$20
+  STA DAS1H
+  STZ DAS1L
+
+  ; 
+  LDA CHR_BANK_TARGET_BANK
+  ASL
+  ASL
+  ASL
+  ASL
+  STA VMADDH
+  STZ VMADDL
+
+  LDA #$02
+  STA MDMAEN
+  PLB
+  LDA VMAIN_STATUS
+  STA VMAIN
+
+  RTS
+
+; which bank we should swap the sprite into, 00 - 0A aren't sprites so we set it to 0
+; we only use 00, 10, and 11 for sprite locations, which are 00, 04, and 06
+target_obj_banks:
+.byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+.byte $00 ; 0B - court screen
+.byte $04 ; 0C - travel screen
+.byte $06 ; 0D - Player sprites
+.byte $06 ; 0E - Player sprites
+.byte $06 ; 0F - Player sprites
+.byte $06 ; 10 - Player sprites
+.byte $06 ; 11 - Player sprites
+.byte $06 ; 12 - Player sprites
+.byte $06 ; 13 - Player sprites
+.byte $06 ; 14 - Player sprites
+.byte $06 ; 15 - Player sprites
+.byte $06 ; 16 - Player sprites
+.byte $04 ; 17 - match over
+.byte $00 ; 18 - 1950s Russia background
+.byte $00 ; 19 - Name entry?
 
 load_palette:
   PHX
@@ -601,6 +812,82 @@ write_empty_palette_row:
   STZ CGDATA
   STZ CGDATA
   RTS
+
+handle_arrow_game_type:
+  PHB
+  PHA
+; F53E
+  LDA #$A0
+  PHA
+  PLB
+
+  LDA $06B1
+  TAX
+  LDY #$00
+
+: LDA game_type_arrow+1,Y
+  STA VMADDH ; PpuAddr_2006
+
+  LDA game_type_arrow,Y
+  STA VMADDL ; PpuAddr_2006
+  INY
+  INY
+
+  CPX #$00
+  BNE :+
+  PLA
+  BRA :++
+: LDA #$00
+: STA VMDATAL ; PpuData_2007
+  DEX
+  CPY #$06 
+  BNE :---
+
+  PLB
+  RTL
+
+handle_arrow_difficulty:
+  PHB
+
+  PHA
+  LDA #$A0
+  PHA
+  PLB
+
+  ; F555
+  LDA $06EA
+  TAX
+  LDY #$00
+
+: LDA difficulty_arrow+1,Y
+  STA VMADDH ; PpuAddr_2006
+
+  LDA difficulty_arrow,Y
+  STA VMADDL ; PpuAddr_2006
+  INY
+  INY
+
+  CPX #$00
+  BNE :+
+  PLA
+  BRA :++
+: LDA #$00
+: STA VMDATAL ; PpuData_2007
+  DEX
+  CPY #$06 
+  BNE :---
+
+  PLB
+  RTL
+
+game_type_arrow:
+.byte $E3, $20 ; $28
+.byte $23, $21 ; $29
+.byte $63, $21 ; $29
+difficulty_arrow:
+.byte $23, $23 ; $2B
+.byte $2A, $23 ; $2B
+.byte $33, $23 ; $2B
 
   .include "palette_lookup.asm"
   .include "hardware-status-switches.asm"

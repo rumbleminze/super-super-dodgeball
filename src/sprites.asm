@@ -1,5 +1,15 @@
 translate_nes_sprites_to_oam:
-	setXY16
+    ; check if we need to do this
+    LDA SNES_OAM_TRANSLATE_NEEDED
+    BNE :+
+    RTS
+    ; PHA
+    ; PHX
+    ; PHY
+    ; PHB
+
+
+:   setXY16
 	LDY #$0000
 
 sprite_loop:	
@@ -47,7 +57,8 @@ sprite_loop:
 	BNE sprite_loop
 
   setAXY8
-	rtl
+    STZ SNES_OAM_TRANSLATE_NEEDED
+	rts
 
 dma_oam_table:
   ; setXY16
@@ -84,7 +95,8 @@ dma_oam_table:
   LDA #$04
   STA MDMAEN
 
-	RTS
+  INC SNES_OAM_TRANSLATE_NEEDED
+  RTS
 
 zero_oam:
 
@@ -92,7 +104,7 @@ zero_oam:
   ldx #$0000
 
 : stz SNES_OAM_START, x
-  lda #$f8
+  lda #$f0
   STA SNES_OAM_START + 1, x
   STZ SNES_OAM_START + 2, x
   STZ SNES_OAM_START + 3, x

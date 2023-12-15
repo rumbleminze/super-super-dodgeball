@@ -1259,11 +1259,39 @@
 .byte $0E, $0E, $0E, $00, $01, $02, $03, $04, $06, $05, $07, $0B, $00, $08, $00, $00
 .byte $0B, $0D, $00, $00, $00, $00, $00, $07, $00, $00, $00, $0B, $00, $08, $00, $00
 .byte $0B, $0D, $0B, $00, $00, $00, $00, $07, $00, $00, $00, $14, $15, $1A, $16, $18
-.byte $17, $1B, $19, $1F, $1D, $1E, $1D, $1D, $A9, $00, $85, $6E, $A9, $00, $85, $C2
-.byte $85, $C3, $85, $C4, $A9, $25, $20, $15, $FA, $20, $B5, $FC, $20, $8A, $FE, $20
-.byte $2E, $DB, $20, $F1, $DB, $20, $34, $FE, $20, $B5, $FC, $A9, $08, $20, $65, $FA
-.byte $20, $BB, $DB, $20, $A0, $FC, $20, $8A, $FE, $20, $BF, $FC, $A9, $80, $8D, $00
-.byte $01, $A9, $00, $8D, $06, $01, $20, $7E, $FE, $4C, $B9, $F3, $A9, $00, $AE, $B1
+.byte $17, $1B, $19, $1F, $1D, $1E, $1D, $1D
+
+; F378 - Main Loop
+  LDA #$00
+  STA $6E
+  LDA #$00
+  STA $C2
+  STA $C3
+  STA $C4
+  LDA #$25
+  JSR $FA15
+  JSR $FCB5
+  JSR $FE8A
+  JSR $DB2E
+  JSR $DBF1
+  JSR $FE34
+  JSR $FCB5
+  LDA #$08
+  JSR $FA65
+  JSR $DBBB
+  JSR $FCA0
+  JSR $FE8A
+  JSR $FCBF
+  LDA #$80
+  STA $0100
+  LDA #$00
+  STA $0106
+  JSR $FE7E
+;   Busy loop for title screen
+@old_busy_loop:
+  JMP @title_screen_busy
+
+.byte $A9, $00, $AE, $B1
 .byte $06, $E0, $03, $90, $03, $8D, $B1, $06, $A9, $01, $AE, $EA, $06, $E0, $03, $90
 .byte $03, $8D, $EA, $06, $A5, $70, $09, $01, $85, $70, $A9, $00, $85, $6E, $20, $8A
 .byte $FE, $20, $B5, $FC, $20, $2E, $DB, $20, $F1, $DB, $20, $34, $FE, $A9, $00, $8D
@@ -1293,11 +1321,47 @@
 .byte $55, $F5, $4C, $1E, $F5, $98, $29, $02, $F0, $14, $A9, $00, $20, $55, $F5, $CE
 .byte $EA, $06, $10, $05, $A9, $00, $8D, $EA, $06, $A9, $3F, $20, $55, $F5, $60, $A9
 .byte $3F, $AD, $9E, $06, $29, $10, $F0, $0B, $A9, $3F, $20, $3E, $F5, $A9, $3F, $20
-.byte $55, $F5, $60, $A9, $00, $20, $3E, $F5, $A9, $00, $20, $55, $F5, $60, $48, $AD
-.byte $B1, $06, $0A, $AA, $BD, $6D, $F5, $8D, $06, $20, $BD, $6C, $F5, $8D, $06, $20
-.byte $68, $8D, $07, $20, $60, $48, $AD, $EA, $06, $0A, $AA, $BD, $73, $F5, $8D, $06
-.byte $20, $BD, $72, $F5, $8D, $06, $20, $68, $8D, $07, $20, $60, $E3, $28, $23, $29
-.byte $63, $29, $23, $2B, $2A, $2B, $33, $2B, $A5, $78, $29, $EF, $85, $78, $20, $B5
+.byte $55, $F5, $60, $A9, $00, $20, $3E, $F5, $A9, $00, $20, $55, $F5, $60
+
+; F53E
+  JSL handle_arrow_game_type
+;   PHA
+;   LDA $06B1
+;   ASL A
+;   TAX
+;   LDA $F56D,X
+;   STA VMADDH ; PpuAddr_2006
+;   LDA $F56C,X
+;   STA VMADDL ; PpuAddr_2006
+;   PLA
+;   STA VMDATAL ; PpuData_2007
+  nops 18
+  RTS
+
+  ; F555
+  JSL handle_arrow_difficulty
+;   PHA
+;   LDA $06EA
+;   ASL A
+;   TAX
+;   LDA $F573,X
+;   STA VMADDH ; PpuAddr_2006
+;   LDA $F572,X
+;   STA VMADDL ; PpuAddr_2006
+;   PLA
+;   STA VMDATAL ; PpuData_2007
+nops 18
+  RTS
+
+.byte $E3, $20 ; $28
+.byte $23, $21 ; $29
+.byte $63, $21 ; $29
+
+.byte $23, $23 ; $2B
+.byte $2A, $23 ; $2B
+.byte $33, $23 ; $2B
+
+.byte $A5, $78, $29, $EF, $85, $78, $20, $B5
 .byte $FC, $20, $2E, $DB, $20, $F1, $DB, $A2, $7E, $20, $2E, $DB, $20, $F1, $DB, $A9
 .byte $00, $85, $78, $8D, $70, $01, $8D, $71, $01, $A9, $80, $8D, $B2, $06, $A5, $70
 .byte $29, $60, $F0, $20, $24, $70, $50, $18, $A2, $07, $A9, $00, $9D, $6A, $01, $9D
@@ -1438,8 +1502,16 @@
     setAXY8
     JMP @return_from_stack_shenanigans
 
-.byte $00, $00, $00, $00, $00;, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-.byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+@title_screen_busy:
+    JSR @new_busy_loop
+    JMP @old_busy_loop
+
+@new_busy_loop:
+    JSL snes_busy_loop
+    RTS
+
+;.byte $00, $00, $00, $00, $00;, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+.byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00; , $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
@@ -1629,8 +1701,8 @@ RTS
   JSR $FE8A
 
   LDA $69
-  STA CHR_BANK_SWITCH_P1
-  JSL check_for_chr_bankswap
+  STA CHR_BANK_BANK_TO_LOAD
+  JSL bankswitch_obj_chr_data
 ;   STA $BFFF
 ;   LSR A
 ;   STA $BFFF
