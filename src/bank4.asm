@@ -479,23 +479,85 @@
 .byte $98, $17, $98, $1F, $98, $23, $98, $2B, $98, $2B, $98, $2F, $98, $33, $98, $3B
 .byte $98, $33, $98, $37, $98, $37, $98, $0C, $30, $00, $17, $0C, $30, $1C, $16, $0C
 .byte $30, $27, $12, $0C, $30, $16, $2A, $0C, $30, $37, $16, $0C, $30, $16, $0F, $AD
-.byte $7A, $00, $0A, $AA, $BD, $0D, $9C, $85, $63, $BD, $0E, $9C, $85, $64, $A9, $21
-.byte $A0, $AF, $8D, $06, $20, $8C, $06, $20, $A0, $00, $A2, $03, $B1, $63, $8D, $07
-.byte $20, $C8, $CA, $D0, $F7, $A9, $21, $A0, $CF, $8D, $06, $20, $8C, $06, $20, $A0
-.byte $03, $A2, $03, $B1, $63, $8D, $07, $20, $C8, $CA, $D0, $F7, $60, $17, $18, $0B
+.byte $7A, $00, $0A, $AA, $BD, $0D, $9C, $85, $63, $BD, $0E, $9C, $85, $64
+
+  LDA #$21
+  LDY #$AF
+  STA VMADDH
+  STY VMADDL
+  LDY #$00
+  LDX #$03
+: LDA ($63),Y
+  STA VMDATAL
+  INY
+  DEX
+  BNE :-
+  LDA #$21
+  LDY #$CF
+  STA VMADDH
+  STY VMADDL
+  LDY #$03
+  LDX #$03
+  LDA ($63),Y
+  STA VMDATAL
+
+.byte $C8, $CA, $D0, $F7, $60, $17, $18, $0B
 .byte $19, $1A, $1B, $A5, $71, $29, $07, $AA, $BD, $F0, $98, $48, $E0, $06, $90, $51
 .byte $68, $8A, $29, $01, $0A, $AA, $BD, $B7, $98, $85, $61, $BD, $B8, $98, $85, $62
-.byte $A9, $29, $8D, $06, $20, $A9, $27, $8D, $06, $20, $A0, $00, $B1, $61, $8D, $07
-.byte $20, $C8, $C0, $13, $90, $F6, $60, $BB, $98, $CE, $98, $00, $00, $00, $00, $B2
+
+  LDA #$21 ; #$29
+  STA VMADDH ; PpuAddr_2006
+  LDA #$27
+  STA VMADDL ; PpuAddr_2006
+  LDY #$00
+: LDA ($61),Y
+  STA VMDATAL ; PpuData_2007
+  INY
+  CPY #$13
+  BCC :-
+  RTS
+
+.byte $BB, $98, $CE, $98, $00, $00, $00, $00, $B2
 .byte $A4, $AC, $A8, $A5, $A8, $AD, $A0, $AB, $B2, $00, $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $A5, $A8, $AD, $A0, $AB, $00, $00, $00, $00, $00, $00, $00
-.byte $00, $A9, $29, $8D, $06, $20, $A9, $39, $8D, $06, $20, $68, $8D, $07, $20, $60
-.byte $BB, $BC, $BD, $BE, $BF, $C0, $C1, $C2, $C3, $AD, $7A, $00, $0A, $A8, $B9, $A6
+.byte $00
+
+; round #
+  LDA #$21 ; #$29
+  STA VMADDH ; PpuAddr_2006
+  LDA #$39
+  STA VMADDL ; PpuAddr_2006
+  PLA
+  STA VMDATAL
+  RTS
+
+.byte $BB, $BC, $BD, $BE, $BF, $C0, $C1, $C2, $C3
+
+; 98F9 - opponent team name
+  nop
+  LDA $7A
+  ASL A
+  TAY
+  LDA $9BA6,Y
+  STA $61
+  LDA $9BA7,Y
+  STA $62
+  LDA #$21 ; #$29
+  STA VMADDH
+  LDA #$6C
+  STA VMADDL
+  LDY #$00
+: LDA ($61),Y
+  STA VMDATAL
+  INY
+  CPY #$09
+  BCC :-
+  RTS
+
 
 
 ; 9900 - bank 4
-.byte $9B, $85, $61, $B9, $A7, $9B, $85, $62, $A9, $29, $8D, $06, $20, $A9, $6C, $8D
-.byte $06, $20, $A0, $00, $B1, $61, $8D, $07, $20, $C8, $C0, $09, $90, $F6, $60, $31
+.byte $31
 .byte $99, $3A, $99, $43, $99, $4C, $99, $55, $99, $5E, $99, $67, $99, $70, $99, $79
 .byte $99, $B3, $A4, $A0, $AC, $00, $B4, $B2, $A0, $00, $A0, $AB, $AB, $00, $B2, $B3
 .byte $A0, $B1, $B2, $A4, $AD, $A6, $AB, $A0, $AD, $A3, $00, $00, $A8, $AD, $A3, $A8
@@ -532,17 +594,88 @@
 
 
 ; 9B00 - bank 4
-.byte $20, $8A, $FE, $20, $34, $FE, $EE, $9E, $06, $4C, $82, $9A, $85, $4D, $86, $4E
-.byte $A5, $4D, $30, $1B, $B5, $7A, $0A, $AA, $BD, $A6, $9B, $85, $61, $BD, $A7, $9B
-.byte $85, $62, $BD, $0D, $9C, $85, $63, $BD, $0E, $9C, $85, $64, $4C, $48, $9B, $A9
-.byte $BF, $85, $61, $A9, $05, $85, $62, $A5, $4E, $D0, $0D, $18, $A5, $61, $69, $08
-.byte $85, $61, $A5, $62, $69, $00, $85, $62, $A5, $4E, $0A, $AA, $BD, $09, $9C, $A8
-.byte $BD, $0A, $9C, $8D, $06, $20, $8C, $06, $20, $A0, $00, $A2, $09, $B1, $61, $8D
-.byte $07, $20, $C8, $CA, $D0, $F7, $A5, $4E, $0A, $AA, $BD, $4F, $9C, $A8, $BD, $50
-.byte $9C, $8D, $06, $20, $8C, $06, $20, $A0, $00, $A2, $03, $B1, $63, $8D, $07, $20
-.byte $C8, $CA, $D0, $F7, $A5, $4E, $0A, $AA, $BD, $53, $9C, $A8, $BD, $54, $9C, $8D
-.byte $06, $20, $8C, $06, $20, $A0, $03, $A2, $03, $B1, $63, $8D, $07, $20, $C8, $CA
-.byte $D0, $F7, $20, $4C, $A5, $60, $B8, $9B, $C1, $9B, $CA, $9B, $D3, $9B, $DC, $9B
+.byte $20, $8A, $FE, $20, $34, $FE, $EE, $9E, $06, $4C, $82, $9A
+
+; 9b0c big ol subroutine
+  STA $4D
+  STX $4E
+  LDA $4D
+  BMI :+
+  LDA $7A,X
+  ASL A
+  TAX
+  LDA $9BA6,X
+  STA $61
+  LDA $9BA7,X
+  STA $62
+  LDA $9C0D,X
+  STA $63
+  LDA $9C0E,X
+  STA $64
+  JMP $9B48
+: LDA #$BF
+  STA $61
+  LDA #$05
+  STA $62
+  LDA $4E
+  BNE :+
+  CLC
+  LDA $61
+  ADC #$08
+  STA $61
+  LDA $62
+  ADC #$00
+  STA $62
+: LDA $4E
+  ASL A
+  TAX
+  LDA $9C09,X
+  TAY
+  LDA $9C0A,X
+  STA VMADDH
+  STY VMADDL
+  LDY #$00
+  LDX #$09
+: LDA ($61),Y
+  STA VMDATAL
+  INY
+  DEX
+  BNE :-
+  LDA $4E
+  ASL A
+  TAX
+  LDA $9C4F,X
+  TAY
+  LDA $9C50,X
+  STA VMADDH
+  STY VMADDL
+  LDY #$00
+  LDX #$03
+: LDA ($63),Y
+  STA VMDATAL
+  INY
+  DEX
+  BNE :-
+  LDA $4E
+  ASL A
+  TAX
+  LDA $9C53,X
+  TAY
+  LDA $9C54,X
+  STA VMADDH
+  STY VMADDL
+  LDY #$03
+  LDX #$03
+: LDA ($63),Y
+  STA VMDATAL
+  INY
+  DEX
+  BNE :-
+  JSR $A54C
+  RTS
+
+; 9BA6
+.byte $B8, $9B, $C1, $9B, $CA, $9B, $D3, $9B, $DC, $9B
 .byte $E5, $9B, $EE, $9B, $F7, $9B, $00, $9C, $B3, $A4, $A0, $AC, $00, $B4, $B2, $A0
 .byte $00, $A0, $AB, $AB, $FC, $B2, $B3, $A0, $B1, $B2, $00, $A4, $AD, $A6, $AB, $A0
 .byte $AD, $A3, $00, $00, $00, $A8, $AD, $A3, $A8, $A0, $00, $00, $00, $A8, $A2, $A4
@@ -556,16 +689,89 @@
 .byte $7A, $7B, $89, $8A, $8B, $70, $71, $72, $80, $81, $82, $0C, $0D, $0E, $1C, $1D
 .byte $1E, $73, $74, $75, $83, $84, $85, $09, $0A, $0B, $19, $1A, $1B, $76, $77, $78
 .byte $86, $87, $88, $90, $91, $92, $93, $94, $95, $17, $18, $0B, $19, $1A, $1B, $32
-.byte $21, $22, $21, $52, $21, $42, $21, $85, $4D, $86, $4E, $A9, $01, $85, $4F, $A9
-.byte $06, $85, $50, $A9, $00, $85, $51, $A5, $4D, $25, $4F, $D0, $13, $A6, $4E, $B5
-.byte $7A, $0A, $AA, $BD, $F0, $9C, $85, $61, $BD, $F1, $9C, $85, $62, $4C, $99, $9C
-.byte $A9, $CF, $85, $61, $A9, $05, $85, $62, $A5, $4E, $D0, $0D, $18, $A5, $61, $69
-.byte $1E, $85, $61, $A5, $62, $69, $00, $85, $62, $A4, $51, $F0, $10, $18, $A5, $61
-.byte $69, $05, $85, $61, $A5, $62, $69, $00, $85, $62, $88, $D0, $F0, $A5, $4E, $0A
-.byte $AA, $BD, $10, $9E, $85, $63, $BD, $11, $9E, $85, $64, $A4, $51, $F0, $10, $18
-.byte $A5, $63, $69, $20, $85, $63, $A5, $64, $69, $00, $85, $64, $88, $D0, $F0, $A4
-.byte $63, $8D, $06, $20, $8C, $06, $20, $A0, $00, $A2, $05, $B1, $61, $8D, $07, $20
-.byte $C8, $CA, $D0, $F7, $06, $4F, $E6, $51, $C6, $50, $F0, $03, $4C, $67, $9C, $60
+.byte $21, $22, $21, $52, $21, $42, $21
+
+
+; 9C57
+  STA $4D
+  STX $4E
+  LDA #$01
+  STA $4F
+  LDA #$06
+  STA $50
+  LDA #$00
+  STA $51
+  LDA $4D
+  AND $4F
+  BNE :+
+  LDX $4E
+  LDA $7A,X
+  ASL A
+  TAX
+  LDA $9CF0,X
+  STA $61
+  LDA $9CF1,X
+  STA $62
+  JMP $9C99
+: LDA #$CF
+  STA $61
+  LDA #$05
+  STA $62
+  LDA $4E
+  BNE :+
+  CLC
+  LDA $61
+  ADC #$1E
+  STA $61
+  LDA $62
+  ADC #$00
+  STA $62
+: LDY $51
+  BEQ :++
+: CLC
+  LDA $61
+  ADC #$05
+  STA $61
+  LDA $62
+  ADC #$00
+  STA $62
+  DEY
+  BNE :-
+: LDA $4E
+  ASL A
+  TAX
+  LDA $9E10,X
+  STA $63
+  LDA $9E11,X
+  STA $64
+  LDY $51
+  BEQ :++
+: CLC
+  LDA $63
+  ADC #$20
+  STA $63
+  LDA $64
+  ADC #$00
+  STA $64
+  DEY
+  BNE :-
+: LDY $63
+  STA VMADDH
+  STY VMADDL
+  LDY #$00
+  LDX #$05
+: LDA ($61),Y
+  STA VMDATAL
+  INY
+  DEX
+  BNE :-
+  ASL $4F
+  INC $51
+  DEC $50
+  BEQ :+
+  JMP $9C67
+: RTS
+
 .byte $02, $9D, $20, $9D, $3E, $9D, $5C, $9D, $7A, $9D, $98, $9D, $B6, $9D, $D4, $9D
 
 
@@ -732,28 +938,143 @@
 .byte $AA, $BD, $CA, $A6, $85, $61, $BD, $CB, $A6, $85, $62, $A0, $00, $B1, $61, $85
 .byte $04, $C8, $B1, $61, $85, $05, $C8, $B1, $61, $85, $06, $C8, $B1, $61, $85, $07
 .byte $C8, $B1, $61, $85, $08, $C8, $B1, $61, $85, $09, $20, $7B, $A6, $20, $A1, $A5
-.byte $60, $AD, $7A, $00, $29, $7F, $C9, $03, $F0, $08, $C9, $07, $F0, $04, $A2, $00
-.byte $F0, $13, $AD, $7B, $00, $29, $7F, $C9, $03, $F0, $08, $C9, $07, $F0, $04, $A2
-.byte $02, $D0, $02, $A2, $04, $BD, $69, $A6, $85, $61, $BD, $6A, $A6, $85, $62, $A0
-.byte $00, $A9, $23, $A2, $D0, $8D, $06, $20, $8E, $06, $20, $AD, $07, $20, $AD, $07
-.byte $20, $29, $3F, $11, $61, $85, $02, $A9, $23, $A2, $D0, $8D, $06, $20, $8E, $06
-.byte $20, $A5, $02, $8D, $07, $20, $C8, $A9, $23, $A2, $D1, $8D, $06, $20, $8E, $06
+.byte $60
+
+; a5a1 - a668 change position screen flag / attribute stuff
+  nop
+  nop
+  LDA $007A
+  AND #$7F
+  CMP #$03
+  BEQ :+
+  CMP #$07
+  BEQ :+
+  LDX #$00
+  BEQ :+++
+: LDA $007B
+  AND #$7F
+  CMP #$03
+  BEQ :+
+  CMP #$07
+  BEQ :+
+  LDX #$02
+  BNE :++
+: LDX #$04
+: LDA $A669,X
+  STA $61
+  LDA $A66A,X
+  STA $62
+  LDY #$00
+  LDA #$23
+  LDX #$D0
+  STA VMADDH
+  STX VMADDL
+  LDA VMDATAL
+  LDA VMDATAL
+  AND #$3F
+  ORA ($61),Y
+  STA $02
+  LDA #$23
+  LDX #$D0
+  STA VMADDH
+  STX VMADDL
+  LDA $02
+  STA VMDATAL
+  INY
+  LDA #$23
+  LDX #$D1
+  STA VMADDH
+  STX VMADDL
+  LDA VMDATAL
+  LDA VMDATAL
+  AND #$CF
+  ORA ($61),Y
+  STA $02
+  LDA #$23
+  LDX #$D1
+  STA VMADDH
+  STX VMADDL
+  LDA $02
+  STA VMDATAL
+  INY
+  LDA #$23
+  LDX #$D4
+  STA VMADDH
+  STX VMADDL
+  LDA VMDATAL
+  LDA VMDATAL
+  AND #$3F
+  ORA ($61),Y
+  STA $02
+  LDA #$23
+  LDX #$D4
+  STA VMADDH
+  STX VMADDL
+  LDA $02
+  STA VMDATAL
+  INY
+  LDA #$23
+  LDX #$D5
+  STA VMADDH
+  STX VMADDL
+  LDA VMDATAL
+  LDA VMDATAL
+  AND #$CF
+  ORA ($61),Y
+  STA $02
+  LDA #$23
+  LDX #$D5
+  STA VMADDH
+  STX VMADDL
+  LDA $02
+  STA VMDATAL
+  RTS
+
+; a669
+.byte $6F, $A6, $73, $A6, $77, $A6, $80
+.byte $20, $C0, $30, $40, $10, $80, $20, $80, $20, $80, $20
+
+; palette stuff
+  JSL load_tile_palette_from_4_addresses
+;   LDA #$3F
+;   STA PpuAddr_2006
+;   LDA #$00
+;   STA PpuAddr_2006
+;   LDY #$00
+;   LDA ($02),Y
+;   STA PpuData_2007
+;   INY
+;   CPY #$04
+;   BCC $A687
+;   LDY #$00
+;   LDA ($04),Y
+;   STA PpuData_2007
+;   INY
+;   CPY #$04
+;   BCC $A693
+;   LDY #$00
+;   LDA ($06),Y
+;   STA PpuData_2007
+;   INY
+;   CPY #$04
+;   BCC $A69F
+;   LDY #$00
+;   LDA ($08),Y
+;   STA PpuData_2007
+;   INY
+;   CPY #$04
+;   BCC $A6AB
+;   LDA #$3F
+;   STA PpuAddr_2006
+;   LDA #$00
+;   STA PpuAddr_2006
+;   STA PpuAddr_2006
+;   STA PpuAddr_2006
+  nops 70
+  RTS
 
 
-; A600 - bank 4
-.byte $20, $AD, $07, $20, $AD, $07, $20, $29, $CF, $11, $61, $85, $02, $A9, $23, $A2
-.byte $D1, $8D, $06, $20, $8E, $06, $20, $A5, $02, $8D, $07, $20, $C8, $A9, $23, $A2
-.byte $D4, $8D, $06, $20, $8E, $06, $20, $AD, $07, $20, $AD, $07, $20, $29, $3F, $11
-.byte $61, $85, $02, $A9, $23, $A2, $D4, $8D, $06, $20, $8E, $06, $20, $A5, $02, $8D
-.byte $07, $20, $C8, $A9, $23, $A2, $D5, $8D, $06, $20, $8E, $06, $20, $AD, $07, $20
-.byte $AD, $07, $20, $29, $CF, $11, $61, $85, $02, $A9, $23, $A2, $D5, $8D, $06, $20
-.byte $8E, $06, $20, $A5, $02, $8D, $07, $20, $60, $6F, $A6, $73, $A6, $77, $A6, $80
-.byte $20, $C0, $30, $40, $10, $80, $20, $80, $20, $80, $20, $A9, $3F, $8D, $06, $20
-.byte $A9, $00, $8D, $06, $20, $A0, $00, $B1, $02, $8D, $07, $20, $C8, $C0, $04, $90
-.byte $F6, $A0, $00, $B1, $04, $8D, $07, $20, $C8, $C0, $04, $90, $F6, $A0, $00, $B1
-.byte $06, $8D, $07, $20, $C8, $C0, $04, $90, $F6, $A0, $00, $B1, $08, $8D, $07, $20
-.byte $C8, $C0, $04, $90, $F6, $A9, $3F, $8D, $06, $20, $A9, $00, $8D, $06, $20, $8D
-.byte $06, $20, $8D, $06, $20, $60, $0C, $30, $00, $17, $4A, $A7, $4A, $A7, $50, $A7
+.byte $0C, $30, $00, $17, $4A, $A7, $4A, $A7, $50, $A7
 .byte $4A, $A7, $56, $A7, $4A, $A7, $5C, $A7, $56, $A7, $4A, $A7, $4A, $A7, $50, $A7
 .byte $4A, $A7, $56, $A7, $4A, $A7, $5C, $A7, $56, $A7, $62, $A7, $62, $A7, $68, $A7
 .byte $62, $A7, $6E, $A7, $62, $A7, $74, $A7, $6E, $A7, $4A, $A7, $4A, $A7, $50, $A7

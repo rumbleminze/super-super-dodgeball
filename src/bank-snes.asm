@@ -90,10 +90,10 @@ initialize_registers:
 
   LDA #$FF
   STA WRIO   
-  STZ CHR_BANK_SWITCH_P1
+  STZ OBJ_CHR_BANK_SWITCH
   
   LDA #$01
-  STA CHR_BANK_SWITCH_P2
+  STA BG_CHR_BANK_SWITCH
   
   STZ WRMPYA 
   STZ WRMPYB 
@@ -224,7 +224,7 @@ initialize_registers:
 
   JSR clearvm
   JSL check_for_chr_bankswap
-  JSL check_for_second_table_chr_bankswap
+  JSL check_for_bg_chr_bankswap
 
 
   RTL
@@ -302,16 +302,16 @@ bankswap_table:
 check_for_chr_bankswap:
   
 
-  LDA CHR_BANK_SWITCH_P1
+  LDA OBJ_CHR_BANK_SWITCH
   CMP #$FF
   BEQ :-
   CMP CHR_BANK_CURR_P1
   BEQ :-
 
-  LDA CHR_BANK_SWITCH_P1
+  LDA OBJ_CHR_BANK_SWITCH
   STA CHR_BANK_CURR_P1
   ; LDA #$FF
-  ; STA CHR_BANK_SWITCH_P1
+  ; STA OBJ_CHR_BANK_SWITCH
   
   PHB
   LDA #$A0
@@ -369,17 +369,35 @@ check_for_chr_bankswap:
 
 : RTL
 
-check_for_second_table_chr_bankswap:
-  LDA CHR_BANK_SWITCH_P2
+check_for_bg_chr_bankswap:
+  LDA BG_CHR_BANK_SWITCH
   CMP #$FF
   BEQ :-
-  CMP CHR_BANK_CURR_P2
+  CMP BG_CHR_BANK_CURR
+  BEQ :-
+  
+  LDA NMITIMEN_STATUS
+  AND #$7F
+  STA NMITIMEN
+
+  ; LDA RDNMI
+: LDA RDNMI
+  AND #$80
   BEQ :-
 
-  LDA CHR_BANK_SWITCH_P2
-  STA CHR_BANK_CURR_P2
+  ; LDA #$80
+  ; STA INIDISP
+
+
+  
+  ; STZ TM
+  
+  LDA BG_CHR_BANK_SWITCH
+  STA BG_CHR_BANK_CURR
   ; LDA #$FF
-  ; STA CHR_BANK_SWITCH_P1
+  ; STA OBJ_CHR_BANK_SWITCH
+
+
 
   PHB
   LDA #$A0
@@ -389,9 +407,9 @@ check_for_second_table_chr_bankswap:
   ; looks like we need to switch CHR Banks
   ; we fake this by DMA'ing tiles from the right tileset
   ; multiply by 3 to get the offset
-  LDA CHR_BANK_CURR_P2
+  LDA BG_CHR_BANK_CURR
   ASL A
-  ADC CHR_BANK_CURR_P2
+  ADC BG_CHR_BANK_CURR
   TAY
 
   LDA #$80
@@ -433,6 +451,17 @@ check_for_second_table_chr_bankswap:
   LDA VMAIN_STATUS
   STA VMAIN
 
+  ; LDA INIDISP_STATE
+  ; STA INIDISP
+
+  LDA NMITIMEN_STATUS
+  STA NMITIMEN
+
+  ; LDA #$11
+  ; STA TM
+  ; LDA INIDISP_STATE
+  ; STA INIDISP
+
   RTL
 
 bankswitch_bg_chr_data:
@@ -445,13 +474,12 @@ bankswitch_bg_chr_data:
   LDY #$01
 : LDA CHR_BANK_LOADED_TABLE, y
   CMP CHR_BANK_BANK_TO_LOAD
-  BEQ switch_to_y
+  BEQ switch_bg_to_y
   CPY #$07
   BEQ new_bg_bank
   INY
   INY
   BRA :-
-
   RTL
 
 new_bg_bank:
@@ -460,23 +488,29 @@ new_bg_bank:
   
   CMP #$19
   BPL new_data_bank
-
-
-
   PLB
   RTL
 
+switch_bg_to_y:
+  TYA
+  ORA #$10
+  STA BG12NBA
+
+  PLB
+  RTL
 new_data_bank:
 
   STZ CHR_BANK_TARGET_BANK
   INC CHR_BANK_TARGET_BANK
-  JSR load_chr_table_to_vm
+  JSL load_chr_table_to_vm
 
   PLB
   RTL
 
 bankswitch_obj_chr_data:
+  ; this is a hack that happens to work most of the time.
   STZ NES_H_SCROLL
+
   PHB
   LDA #$A0
   PHA
@@ -494,6 +528,10 @@ bankswitch_obj_chr_data:
 
 new_obj_bank:
   ; todo load the bank into 0000, 4000, or 6000
+  LDA INIDISP_STATE
+  ORA #$80
+  STA INIDISP
+
   LDA CHR_BANK_BANK_TO_LOAD
   TAY
   LDA target_obj_banks, Y
@@ -517,7 +555,10 @@ new_obj_bank:
   STA CHR_BANK_TARGET_BANK
   jsl load_chr_table_to_vm
 
-: PLA
+: 
+  LDA INIDISP_STATE
+  STA INIDISP
+  PLA
   TAY
   bra switch_to_y
 
@@ -620,198 +661,7 @@ target_obj_banks:
 .byte $00 ; 18 - 1950s Russia background
 .byte $00 ; 19 - Name entry?
 
-load_palette:
-  PHX
-  PHY
-  PHA
-  PHB
-  PLA
-  STA $04
-  PHA
 
-  setAXY8
-
-  LDA #$A0
-  PHA
-  PLB
-  LDY #$00
-  STZ CGADD
-
-palette_entry:
-  LDA [$02],Y
-  ASL A
-  TAX
-  LDA palette_lookup, X
-  STA CGDATA
-  LDA palette_lookup + 1, X
-  STA CGDATA
-  INY
-
-; every 4 we need to write a bunch of empty palette entries
-  TYA
-  AND #$03
-  BNE skip_writing_three_rows
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-skip_writing_three_rows:
-  TYA
-  AND #$0F
-  CMP #$00
-  BNE skip_writing_four_empties
-  ; after 16 entries we write an empty set of palettes
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set  
-skip_writing_four_empties:
-  CPY #$20
-  BNE palette_entry
-
-  PLB
-  PLA
-  PLY
-  PLX
-
-  RTL
-
-
-load_sprite_palette:
-  PHX
-  PHY
-  PHA
-  PHB
-  PLA
-  STA SPRITE_LOOKUP_DB
-  PHA
-
-  setAXY8
-
-  LDA #$A0
-  PHA
-  PLB
-  LDY #$00
-  LDA #$80
-  STA CGADD
-
-  LDA $02
-  STA SPRITE_LOOKUP_LB
-  LDA $03
-  STA SPRITE_LOOKUP_HB
-
-: LDA [SPRITE_LOOKUP_LB],Y
-  ASL A
-  TAX
-  LDA palette_lookup, X
-  STA CGDATA
-  LDA palette_lookup + 1, X
-  STA CGDATA
-  INY  
-  CPY #$04
-  BNE :-
-; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-
-  LDY #$00
-  LDA $04
-  STA SPRITE_LOOKUP_LB
-  LDA $05
-  STA SPRITE_LOOKUP_HB
-
-: LDA [SPRITE_LOOKUP_LB],Y
-  ASL A
-  TAX
-  LDA palette_lookup, X
-  STA CGDATA
-  LDA palette_lookup + 1, X
-  STA CGDATA
-  INY  
-  CPY #$04
-  BNE :-
-
-; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-
-  LDY #$00
-  LDA $06
-  STA SPRITE_LOOKUP_LB
-  LDA $07
-  STA SPRITE_LOOKUP_HB
-
-: LDA [SPRITE_LOOKUP_LB],Y
-  ASL A
-  TAX
-  LDA palette_lookup, X
-  STA CGDATA
-  LDA palette_lookup + 1, X
-  STA CGDATA
-  INY  
-  CPY #$04
-  BNE :-
-  
-; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-
-  LDY #$00
-  LDA $08
-  STA SPRITE_LOOKUP_LB
-  LDA $09
-  STA SPRITE_LOOKUP_HB
-
-: LDA [SPRITE_LOOKUP_LB],Y
-  ASL A
-  TAX
-  LDA palette_lookup, X
-  STA CGDATA
-  LDA palette_lookup + 1, X
-  STA CGDATA
-  INY  
-  CPY #$04
-  BNE :-
-  
-; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-
-  ; after 16 entries we write an empty set of palettes
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set  
-
-  PLB
-  PLA
-  PLY
-  PLX
-
-  RTL
-
-
-
-write_empty_palette_set:
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  RTS
-
-write_empty_palette_row:
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  RTS
 
 handle_arrow_game_type:
   PHB
@@ -889,6 +739,7 @@ difficulty_arrow:
 .byte $2A, $23 ; $2B
 .byte $33, $23 ; $2B
 
+  .include "palette_updates.asm"
   .include "palette_lookup.asm"
   .include "hardware-status-switches.asm"
   .include "sprites.asm"

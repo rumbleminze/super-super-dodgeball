@@ -171,6 +171,11 @@ set_vm_increment_mode_1:
 ; |+-------- Emphasize green (red on PAL/Dendy)
 ; +--------- Emphasize blue
 ; 
+set_ppu_mask_to_1e:
+    LDA #$1E
+    BRA change_ppu_mask_status
+set_ppu_mask_to_0:
+    LDA #$00
 change_ppu_mask_status:
     STA PPU_MASK_STATUS
     ; setting to 0 is common, so optimize for that
@@ -180,9 +185,18 @@ change_ppu_mask_status:
     STA INIDISP
     STA INIDISP_STATE
     RTL
+:   CMP #$1E
+    BNE :+
+    LDA #$11
+    STA TM
+    LDA INIDISP_STATE
+    AND #$7F
+    ORA #$0F
+    STA INIDISP_STATE
+    STA INIDISP
+    RTL
 
-:   
-    LDA #$0F
+:   LDA #$0F
     STA INIDISP
     STA INIDISP_STATE
 
@@ -259,3 +273,4 @@ set_vm_incr_to_1_and_reset_nametable_and_store:
     ; STZ H/V offset HB here if we need to
 
     RTL
+
