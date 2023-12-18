@@ -105,6 +105,27 @@ load_palette_from_74:
   STA PALETTE_LOAD_HB
   JMP load_palette_v2
 
+load_sprite_palette_from_51:
+  PHX
+  PHY
+  PHA
+
+  LDA #$80
+  STA PALETTE_OFFSET
+   ; save these values in case they're used by the game
+  LDA PALETTE_LOAD_LB
+  PHA
+  LDA PALETTE_LOAD_HB
+  PHA
+  LDA PALETTE_LOAD_DB
+  PHA
+
+  LDA $51
+  STA PALETTE_LOAD_LB
+  LDA $52
+  STA PALETTE_LOAD_HB
+  JMP load_palette_v2
+
 load_palette_from_51:
   PHX
   PHY

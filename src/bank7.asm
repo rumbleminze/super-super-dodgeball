@@ -416,7 +416,7 @@
   ADC $4D
   STA $55
   LDA $4E
-  ADC #$00
+  ADC #$60
 
 ;   JSL read_chr_data
 ;   nops 12

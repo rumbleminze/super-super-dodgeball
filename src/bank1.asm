@@ -1147,21 +1147,29 @@ nops 1
   TAY
   LDA $017A
   STA $02
+
   LDA $017B
   STA $03
+
   INY
   LDA ($02),Y
+; we're reading data, this should be the 7000 bank instead of the 6000
+  ADC #$60
+  
   STA VMADDH
   DEY
+
   LDA ($02),Y
   INC $4D
   STA VMADDL
 
   LDY #$00
-  LDA $FF
-  AND #$FB
-  STA $FF
+;   LDA $FF
+;   AND #$FB
+;   STA $FF
+  nops 4
 ;   STA $2000
+
   LDA VMDATALREAD ; $2007
 : LDA VMDATALREAD ; $2007
   STA $0108,Y
@@ -1171,9 +1179,6 @@ nops 1
   TXA
   JSR $BD81
   RTS
-
-
-
 
 .byte $E0, $22, $40, $23
 .byte $A0, $21, $C0, $21, $E0, $21, $C0, $23, $E0, $23, $20, $23
@@ -1297,31 +1302,35 @@ nops 1
   STA $52
 
   ; updating palette
-  LDA #$3F
-  STA VMADDH
-  LDA #$10
-  STA VMADDL
+  
+  JSL load_sprite_palette_from_51
+  nops 43
+;   LDA #$3F
+;   STA VMADDH
+;   LDA #$10
+;   STA VMADDL
 
-  JSL set_vm_incr_to_1_and_store
-  nops 5
-;   LDA $FF
-;   AND #$FB
-;   STA $FF
-;   STA $2000
+;   JSL set_vm_incr_to_1_and_store
+;   nops 5
+; ;   LDA $FF
+; ;   AND #$FB
+; ;   STA $FF
+; ;   STA $2000
 
-  LDY #$00
-: LDA ($51),Y
-  STA VMDATAL
-  INY
-  CPY #$10
-  BNE :-
 
-  LDA #$3F
-  STA VMADDH
-  LDA #$00
-  STA VMADDL
-  STA VMADDH
-  STA VMADDL
+;   LDY #$00
+; : LDA ($51),Y
+;   STA VMDATAL
+;   INY
+;   CPY #$10
+;   BNE :-
+
+;   LDA #$3F
+;   STA VMADDH
+;   LDA #$00
+;   STA VMADDL
+;   STA VMADDH
+;   STA VMADDL
 
 
   JSR $BF1D

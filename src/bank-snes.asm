@@ -218,6 +218,7 @@ initialize_registers:
 
   LDA #$1B
   STA CHR_BANK_BANK_TO_LOAD
+  STA DATA_CHR_BANK_CURR
   LDA #$07
   STA CHR_BANK_TARGET_BANK
   JSL load_chr_table_to_vm
@@ -300,7 +301,6 @@ bankswap_table:
 
 : RTL
 check_for_chr_bankswap:
-  
 
   LDA OBJ_CHR_BANK_SWITCH
   CMP #$FF
@@ -369,13 +369,30 @@ check_for_chr_bankswap:
 
 : RTL
 
+
+; we'll put the data at $7000 always
+swap_data_bg_chr:
+  LDA BG_CHR_BANK_SWITCH
+  CMP DATA_CHR_BANK_CURR
+  BEQ :-
+  STA DATA_CHR_BANK_CURR
+  LDA #$60
+  STA TARGET_BANK_OFFSET
+  JMP bankswap_start
+
+
 check_for_bg_chr_bankswap:
   LDA BG_CHR_BANK_SWITCH
   CMP #$FF
   BEQ :-
+
+  CMP #$1A
+  BPL swap_data_bg_chr
+
   CMP BG_CHR_BANK_CURR
   BEQ :-
-  
+
+bankswap_start:
   LDA NMITIMEN_STATUS
   AND #$7F
   STA NMITIMEN
@@ -387,17 +404,12 @@ check_for_bg_chr_bankswap:
 
   ; LDA #$80
   ; STA INIDISP
-
-
-  
   ; STZ TM
   
   LDA BG_CHR_BANK_SWITCH
   STA BG_CHR_BANK_CURR
   ; LDA #$FF
   ; STA OBJ_CHR_BANK_SWITCH
-
-
 
   PHB
   LDA #$A0
@@ -440,10 +452,12 @@ check_for_bg_chr_bankswap:
   STA DAS1H
   STZ DAS1L
 
-  ; page 2 is at $1000
+  ; page 2 is at $1000, data bank will add 6000 to that
   LDA #$10
+  ADC TARGET_BANK_OFFSET
   STA VMADDH
   STZ VMADDL
+  STZ TARGET_BANK_OFFSET
 
   LDA #$02
   STA MDMAEN
