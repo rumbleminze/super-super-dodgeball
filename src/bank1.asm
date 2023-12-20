@@ -1124,8 +1124,20 @@ nops 1
 .byte $26, $B0, $0F, $A9, $00, $20, $56, $BB, $A9, $A0, $20, $6A, $BD, $A9, $01, $20
 .byte $56, $BB, $A5, $4D, $C9, $26, $D0, $B5, $A9, $03, $20, $56, $BB, $A9, $4C, $8D
 .byte $7A, $01, $A9, $B8, $8D, $7B, $01, $A9, $00, $48, $A9, $01, $20, $6A, $BD, $68
-.byte $48, $0A, $A8, $B9, $6B, $B8, $8D, $06, $20, $B9, $6A, $B8, $8D, $06, $20, $A9
-.byte $00, $A0, $40, $8D, $07, $20, $88, $D0, $FA, $20, $1D, $BF, $68, $18, $69, $01
+.byte $48, $0A, $A8
+
+; end credit logo tiles & attributes
+  LDA $B86B,Y
+  STA VMADDH
+  LDA $B86A,Y
+  STA VMADDL
+  LDA #$00
+  LDY #$40
+: STA VMDATAL
+  DEY
+  BNE :-
+
+.byte  $20, $1D, $BF, $68, $18, $69, $01
 
 
 ; BA00 - bank 1
@@ -1180,8 +1192,14 @@ nops 1
   JSR $BD81
   RTS
 
-.byte $E0, $22, $40, $23
-.byte $A0, $21, $C0, $21, $E0, $21, $C0, $23, $E0, $23, $20, $23
+.byte $E0, $22
+.byte $40, $23
+.byte $A0, $21
+.byte $C0, $21
+.byte $E0, $21
+.byte $C0, $23
+.byte $E0, $23
+.byte $20, $23
 
   PHA
   LDA #$1F
@@ -1190,19 +1208,25 @@ nops 1
   ASL
   TAY
   LDA $BABD,Y
-  STA VMADDH
+  ; STA VMADDH
+  STA $54
   LDA $BABC,Y
-  STA VMADDL
+  ; STA VMADDL
+  STA $53
   LDY #$00
 
   LDA $FF
   AND #$FB
   STA $FF
 ;   STA $2000
-  nops 3
+  ; nops 2
 
 : LDA $0109,Y
-  STA VMDATAL
+  STA $57
+  
+  ; STA VMDATAL
+  JSL handle_ppu_write
+  inc $53
   INY
   CPY #$20
   BNE :-

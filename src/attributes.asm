@@ -30,9 +30,6 @@ handle_ppu_writes_as_attribute:
   PHA
   PLB
 
-  LDA $54
-  LDA $53
-
   ; lo address determines which hb of memory we start in
   LDA ATTR_LO_ADDR
   AND #$30

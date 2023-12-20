@@ -156,9 +156,9 @@ initialize_registers:
   STA TM
   LDA #$01
   STA MEMSEL
+  LDA #$00
   ; Enable overscan mode to approximate NES draw positions
   ; LDA #$04
-  LDA #$00
   STA SETINI
 
 
@@ -396,6 +396,10 @@ bankswap_start:
   LDA NMITIMEN_STATUS
   AND #$7F
   STA NMITIMEN
+  
+  LDA INIDISP_STATE
+  ORA #$80
+  STA INIDISP
 
   ; LDA RDNMI
 : LDA RDNMI
@@ -465,8 +469,8 @@ bankswap_start:
   LDA VMAIN_STATUS
   STA VMAIN
 
-  ; LDA INIDISP_STATE
-  ; STA INIDISP
+  LDA INIDISP_STATE
+  STA INIDISP
 
   LDA NMITIMEN_STATUS
   STA NMITIMEN
