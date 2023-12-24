@@ -176,7 +176,7 @@ initialize_registers:
   ; STZ COL_ATTR_HAS_VALUES
   ; STZ COLUMN_1_DMA
 
-  ; JSL upload_sound_emulator_to_spc
+  JSL upload_sound_emulator_to_spc
 
   ; LDA #$A1
   ; PHA
@@ -784,3 +784,4 @@ difficulty_arrow:
   .include "sprites.asm"
   .include "hud-hdma.asm"
   .include "attributes.asm"
+  .include "2a03_conversion.asm"

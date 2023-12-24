@@ -1584,8 +1584,14 @@ nops 18
 
 
 ; FA00 - bank 7
-.byte $AD, $F9, $BF, $8D, $D9, $06, $A9, $00, $20, $08, $FF, $20, $03, $80, $AD, $D9
-.byte $06, $20, $08, $FF, $60, $8D, $01, $07, $AD, $F9, $BF, $48, $A9, $00, $20, $08
+.byte $AD, $F9, $BF, $8D, $D9, $06, $A9, $00, $20, $08, $FF
+
+  JSR new_sound_routine
+  LDA $06D9
+  JSR $FF08
+  RTS
+
+.byte $8D, $01, $07, $AD, $F9, $BF, $48, $A9, $00, $20, $08
 .byte $FF, $20, $00, $80, $68, $20, $08, $FF, $60, $AA, $AD, $F9, $BF, $48, $8A, $48
 .byte $A9, $02, $20, $08, $FF, $68, $20, $00, $80, $4C, $24, $FA, $48, $A9, $03, $20
 .byte $08, $FF, $68, $20, $09, $80, $08, $48, $A9, $06, $20, $08, $FF, $68, $28, $60
@@ -2028,7 +2034,7 @@ JSL check_for_bg_chr_bankswap
 
   LDA #$0F
   ; SOUND THING
-  STA $4015 ; ApuStatus_4015
+  STA NES_APU_CHAN_ENABLE ; ApuStatus_4015
 ; we set our stack pointer to 01FF instead
 ;   LDX #$FF
 ;   TXS
