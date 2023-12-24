@@ -8,6 +8,26 @@ handle_ppu_write_as_tile_data:
   
   RTL
 
+handle_ppu_write_end_credits:
+  LDA $54
+  AND #$03
+  CMP #$03
+  BNE handle_ppu_write_as_tile_data
+
+  LDA $53
+  CMP #$C0
+  BMI handle_ppu_write_as_tile_data
+  BNE :+
+
+  LDA $54
+  CMP #$23
+  BNE :+
+
+  JSL set_middle_attributes_to_palette_3
+  
+: RTL
+
+
 handle_ppu_write:
 
   LDA $54
@@ -147,10 +167,45 @@ write_quartile:
 
     RTS
 
-
-
-
-  
-
 attr_lo_addr_lookup:
 .byte $00, $04, $08, $0C, $10, $14, $18, $1C, $80, $84, $88, $8C, $90, $94, $98, $9C
+
+
+set_middle_attributes_to_palette_3:
+  LDA #$80
+  STA VMAIN
+
+  ; fixed A value, increment B
+  LDA #$09
+  sta DMAP0
+
+  LDA #$21
+  STA VMADDH
+  LDA #$A0
+  STZ VMADDL
+
+  LDA #$19
+  STA BBAD0
+
+  LDA #$A0
+  STA A1B0
+
+  LDA #>dma_values
+  STA A1T0H
+  LDA #<dma_values
+  STA A1T0L
+
+  LDA #$04
+  STA DAS0H  
+  STZ DAS0L
+
+  LDA #$01
+  STA MDMAEN
+
+  LDA VMAIN_STATUS
+  STA VMAIN
+
+  RTL
+
+  dma_values:
+  .byte $0C, $01, $02, $03

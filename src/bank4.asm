@@ -358,12 +358,29 @@
 .byte $00, $20, $EC, $92, $EE, $87, $05, $AD, $87, $05, $C9, $02, $90, $17, $A9, $00
 .byte $8D, $87, $05, $4C, $D5, $92, $A9, $00, $20, $EC, $92, $CE, $87, $05, $10, $05
 .byte $A9, $01, $8D, $87, $05, $AE, $87, $05, $E8, $86, $6F, $60, $A0, $00, $AD, $9E
-.byte $06, $29, $10, $F0, $02, $A0, $3F, $98, $20, $EC, $92, $60, $48, $AD, $87, $05
-.byte $0A, $A8, $B9, $07, $93, $85, $4D, $B9, $08, $93, $8D, $06, $20, $A5, $4D, $8D
+.byte $06, $29, $10, $F0, $02, $A0, $3F, $98, $20, $EC, $92, $60
 
+
+  PHA
+  LDA $0587
+  ASL
+  TAY
+  LDA $9307,Y
+  STA $4D
+  LDA $9308,Y
+  STA VMADDH
+  LDA $4D
+  STA VMADDL
+  PLA
+  STA VMDATAL
+  RTS
 
 ; 9300 - bank 4
-.byte $06, $20, $68, $8D, $07, $20, $60, $4B, $29, $8B, $29, $CB, $29, $0B, $2A, $24
+.byte $4B, $21 ; $29
+.byte $8B, $21 ; $29
+.byte $CB, $21 ; $29
+.byte $0B, $22 ; $2A
+.byte $24
 .byte $70, $70, $01, $60, $20, $8A, $FE, $20, $B5, $FC, $20, $2E, $DB, $20, $F1, $DB
 .byte $A9, $12, $20, $65, $FA, $20, $32, $96, $20, $4E, $DB, $20, $A0, $FC, $20, $8A
 .byte $FE, $20, $BF, $FC, $A9, $29, $20, $15, $FA, $A9, $00, $8D, $1F, $03, $8D, $57
@@ -404,10 +421,41 @@
 .byte $95, $20, $CE, $95, $90, $06, $20, $DD, $95, $4C, $0F, $95, $20, $E4, $95, $60
 .byte $7D, $7E, $51, $43, $AD, $9E, $06, $29, $03, $CD, $6F, $00, $90, $01, $60, $AA
 .byte $A0, $00, $AD, $9E, $06, $29, $08, $F0, $04, $BD, $10, $95, $A8, $BD, $8B, $05
-.byte $30, $04, $98, $20, $37, $95, $60, $48, $BD, $87, $05, $29, $0F, $8D, $B4, $06
-.byte $BD, $87, $05, $29, $F0, $4A, $4A, $4A, $18, $6D, $B4, $06, $0A, $A8, $B9, $61
-.byte $95, $48, $B9, $62, $95, $8D, $06, $20, $68, $8D, $06, $20, $68, $8D, $07, $20
-.byte $60, $65, $29, $72, $29, $25, $2A, $32, $2A, $E5, $2A, $F2, $2A, $AD, $92, $05
+.byte $30, $04, $98, $20, $37, $95, $60
+
+
+  PHA
+  LDA $0587,X
+  AND #$0F
+  STA $06B4
+  LDA $0587,X
+  AND #$F0
+  LSR
+  LSR
+  LSR
+  CLC
+  ADC $06B4
+  ASL
+  TAY
+  LDA $9561,Y
+  PHA
+  LDA $9562,Y
+  STA VMADDH
+  PLA
+  STA VMADDL
+  PLA
+  STA VMDATAL
+  RTS
+
+
+.byte $65, $21 ;$29
+.byte $72, $21 ;$29
+.byte $25, $22 ;$2A
+.byte $32, $22 ;$2A
+.byte $E5, $22 ;$2A
+.byte $F2, $22 ;$2A
+
+.byte $AD, $92, $05
 .byte $29, $F0, $4A, $4A, $4A, $4A, $A8, $88, $10, $02, $A0, $02, $98, $0A, $0A, $0A
 .byte $0A, $8D, $B4, $06, $AD, $91, $05, $29, $0F, $0D, $B4, $06, $8D, $92, $05, $60
 .byte $AD, $92, $05, $29, $F0, $4A, $4A, $4A, $4A, $A8, $C8, $C0, $03, $90, $02, $A0
@@ -969,8 +1017,8 @@
   LDX #$D0
   STA VMADDH
   STX VMADDL
-  LDA VMDATAL
-  LDA VMDATAL
+  LDA VMDATALREAD
+  LDA VMDATALREAD
   AND #$3F
   ORA ($61),Y
   STA $02
@@ -985,8 +1033,8 @@
   LDX #$D1
   STA VMADDH
   STX VMADDL
-  LDA VMDATAL
-  LDA VMDATAL
+  LDA VMDATALREAD
+  LDA VMDATALREAD
   AND #$CF
   ORA ($61),Y
   STA $02
@@ -1001,8 +1049,8 @@
   LDX #$D4
   STA VMADDH
   STX VMADDL
-  LDA VMDATAL
-  LDA VMDATAL
+  LDA VMDATALREAD
+  LDA VMDATALREAD
   AND #$3F
   ORA ($61),Y
   STA $02
@@ -1017,8 +1065,8 @@
   LDX #$D5
   STA VMADDH
   STX VMADDL
-  LDA VMDATAL
-  LDA VMDATAL
+  LDA VMDATALREAD
+  LDA VMDATALREAD
   AND #$CF
   ORA ($61),Y
   STA $02

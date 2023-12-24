@@ -127,6 +127,7 @@ initialize_registers:
   ; JSR clearvm
   JSR zero_oam  
   JSR dma_oam_table
+  JSL zero_all_palette
 
   LDA #$04
   STA OBSEL
@@ -158,7 +159,7 @@ initialize_registers:
   STA MEMSEL
   LDA #$00
   ; Enable overscan mode to approximate NES draw positions
-  ; LDA #$04
+  LDA #$04
   STA SETINI
 
 
@@ -227,6 +228,7 @@ initialize_registers:
   JSL check_for_chr_bankswap
   JSL check_for_bg_chr_bankswap
 
+  JSL set_middle_attributes_to_palette_3
 
   RTL
 
@@ -249,13 +251,32 @@ clearvm:
 	RTS
 
 snes_nmi:
+  LDA RDNMI
   JSR dma_oam_table  
   JSL hud_hdma_setup
-  JSR translate_nes_sprites_to_oam
+  ; JSR translate_nes_sprites_to_oam
   RTL
 
 snes_busy_loop:
+  PHP
+  LDA SNES_OAM_TRANSLATE_NEEDED
+  BNE :+
+  PLP
+  RTL
+: 
+  SEI
+  PHA
+  PHX
+  PHY
+  PHB
   JSR translate_nes_sprites_to_oam
+
+  PLB
+  PLY
+  PLX
+  PLA
+  PLP
+  CLI
   RTL
 
 bankswap_table:

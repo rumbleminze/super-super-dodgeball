@@ -650,9 +650,19 @@
 .byte $20, $DF, $FC, $60, $85, $4D, $29, $3F, $0A, $AA, $BD, $CA, $DE, $85, $61, $BD
 .byte $CB, $DE, $85, $62, $A0, $00, $B1, $61, $A9, $00, $85, $00, $C8, $B1, $61, $AA
 .byte $C8, $B1, $61, $C9, $FF, $F0, $3E, $C9, $20, $B0, $09, $86, $63, $85, $64, $C6
-.byte $00, $4C, $5A, $DE, $8D, $06, $20, $8E, $06, $20, $C8, $B1, $61, $85, $4E, $C8
+.byte $00, $4C, $5A, $DE
+
+  STA VMADDH
+  STX VMADDL
+
+ 
+.byte $C8, $B1, $61, $85, $4E, $C8
 .byte $B1, $61, $24, $4D, $10, $02, $A9, $20, $20, $89, $DE, $24, $00, $10, $0D, $A2
-.byte $00, $81, $63, $E6, $63, $D0, $08, $E6, $64, $4C, $7F, $DE, $8D, $07, $20, $C6
+.byte $00, $81, $63, $E6, $63, $D0, $08, $E6, $64, $4C, $7F, $DE
+
+ STA VMDATAL
+
+.byte $C6
 .byte $4E, $D0, $DC, $F0, $B3, $20, $DF, $FC, $60, $C9, $20, $90, $16, $C9, $30, $B0
 .byte $08, $38, $E9, $20, $AA, $BD, $BB, $DE, $60, $C9, $3A, $B0, $07, $38, $E9, $30
 .byte $18, $69, $EA, $60, $C9, $41, $B0, $08, $38, $E9, $3A, $AA, $BD, $CB, $DE, $60
@@ -664,12 +674,14 @@
 
 
 ; DF00 - bank 7
-.byte $30, $46, $01, $01, $30, $FF, $FF, $00, $0A, $01, $02, $32, $50, $3E, $01, $02
-.byte $32, $50, $FF, $FF, $00, $CC, $29, $0B, $47, $41, $4D, $45, $20, $4F, $56, $45
-.byte $52, $20, $20, $FF, $FF, $00, $CC, $29, $0B, $47, $41, $4D, $45, $20, $45, $4E
-.byte $44, $20, $20, $20, $FF, $FF, $00, $CC, $29, $0B, $54, $49, $4D, $45, $20, $4F
-.byte $56, $45, $52, $20, $20, $FF, $FF, $00, $0A, $01, $0B, $43, $4F, $4E, $54, $49
-.byte $4E, $55, $45, $20, $20, $20, $FF, $FF, $AD, $9C, $06, $CD, $9D, $06, $F0, $05
+.byte $30, $46, $01, $01, $30, $FF, $FF
+.byte $00, $0A, $01, $02, $32, $50, $3E, $01, $02, $32, $50, $FF, $FF
+.byte $00, $CC, $21, $0B, $47, $41, $4D, $45, $20, $4F, $56, $45, $52, $20, $20, $FF, $FF
+.byte $00, $CC, $21, $0B, $47, $41, $4D, $45, $20, $45, $4E, $44, $20, $20, $20, $FF, $FF
+.byte $00, $CC, $21, $0B, $54, $49, $4D, $45, $20, $4F, $56, $45, $52, $20, $20, $FF, $FF
+.byte $00, $0A, $01, $0B, $43, $4F, $4E, $54, $49, $4E, $55, $45, $20, $20, $20, $FF, $FF
+
+.byte $AD, $9C, $06, $CD, $9D, $06, $F0, $05
 .byte $8D, $9D, $06, $D0, $0B, $AD, $EB, $06, $CD, $EC, $06, $F0, $06, $8D, $EC, $06
 .byte $20, $A0, $DF, $60, $48, $8A, $48, $98, $48, $A5, $FF, $48, $20, $A0, $FC
 
@@ -1262,7 +1274,18 @@ nops 3 ;  LDA $2002
 .byte $D9, $20, $0C, $C0, $20, $A3, $CD, $20, $A4, $AA, $20, $EF, $FA, $20, $00, $E5
 .byte $4C, $97, $F1, $20, $81, $D9, $20, $50, $FA, $20, $DB, $DB, $20, $50, $F7, $A9
 .byte $00, $8D, $B0, $06, $4C, $9A, $F1, $EE, $B0, $06, $A9, $01, $8D, $06, $01, $20
-.byte $00, $FA, $AD, $06, $01, $D0, $FB, $AD, $B0, $06, $D0, $8E, $EE, $9E, $06, $A5
+.byte $00, $FA
+
+; game busy loop
+JML @new_game_busy_loop
+@new_game_busy_loop_return:
+NOP
+  ; LDA $0106
+  ; BNE $A7F1A2
+
+
+
+.byte $AD, $B0, $06, $D0, $8E, $EE, $9E, $06, $A5
 .byte $78, $30, $08, $D0, $03, $4C, $11, $F1, $4C, $BA, $F0, $A5, $78, $29, $DF, $85
 .byte $78, $A5, $70, $29, $60, $D0, $0F, $A5, $78, $29, $01, $AA, $B5, $7A, $30, $0C
 .byte $20, $23, $F2, $4C, $9F, $F0, $20, $23, $F2, $4C, $9F, $F0, $20, $8A, $FE, $E6
@@ -1326,7 +1349,7 @@ nops 3 ;  LDA $2002
   STA $0106
   JSR $FE7E
 ;   Busy loop for title screen
-@old_busy_loop:
+@old_title_busy_loop:
   JMP @title_screen_busy
 
 .byte $A9, $00, $AE, $B1
@@ -1527,9 +1550,21 @@ nops 18
 .byte $85, $50, $20, $64, $F9, $A0, $BF, $A2, $05, $A9, $17, $85, $4F, $A9, $06, $85
 .byte $50, $20, $64, $F9, $A0, $ED, $A2, $06, $A9, $FF, $85, $4F, $A9, $06, $85, $50
 .byte $20, $64, $F9, $60, $86, $4E, $A9, $00, $85, $4D, $91, $4D, $C8, $D0, $02, $E6
-.byte $4E, $A6, $4E, $E4, $50, $D0, $F3, $C4, $4F, $D0, $EF, $60, $A0, $40, $A9, $2B
-.byte $8D, $06, $20, $A9, $C0, $8D, $06, $20, $A9, $FF, $8D, $07, $20, $88, $10, $FA
-.byte $60, $A2, $06, $BD, $9D, $F9, $9D, $F0, $07, $CA, $10, $F7, $60, $4B, $55, $4D
+.byte $4E, $A6, $4E, $E4, $50, $D0, $F3, $C4, $4F, $D0, $EF, $60
+
+; attributes, needs to be updated.
+  LDY #$40
+  LDA #$2B
+  STA VMADDH
+  LDA #$C0
+  STA VMADDL
+  LDA #$FF
+: STA VMDATAL
+  DEY
+  BPL :-
+  RTS
+
+.byte $A2, $06, $BD, $9D, $F9, $9D, $F0, $07, $CA, $10, $F7, $60, $4B, $55, $4D
 .byte $41, $47, $41, $49, $A2, $06, $BD, $F0, $07, $DD, $9D, $F9, $D0, $05, $CA, $10
 .byte $F5, $38, $60, $18, $60
 
@@ -1602,18 +1637,31 @@ nops 18
     setAXY8
     JMP @return_from_stack_shenanigans
 
+@new_game_busy_loop:
+  JSL turn_off_nmi_dont_store
+  JSL snes_busy_loop
+  LDA NMITIMEN_STATUS
+  STA NMITIMEN
+: LDA $0106
+  BNE :-
+  JML @new_game_busy_loop_return
+
 @title_screen_busy:
-    JSR @new_busy_loop
-    JMP @old_busy_loop
+    JSL snes_busy_loop
+:   JMP :-
 
 @new_busy_loop:
+    JSL turn_off_nmi_dont_store
     JSL snes_busy_loop
-    RTS
+    LDA NMITIMEN_STATUS
+    STA NMITIMEN
+:   BRA :-
+    BRA @after_old_busy_loop
 
 ;.byte $00, $00, $00, $00, $00;, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-.byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00; , $00, $00, $00, $00, $00, $00
-.byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-.byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+;.byte $00, $00, $00, $00, $00, $00;, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+; .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00;, $00, $00
+.byte $00, $00, $00, $00, $00;, $00, $00, $00, $00, $00, $00 , $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 
@@ -1630,9 +1678,9 @@ nops 18
   JSL turn_on_nmi_and_store
   STA NMITIMEN
   LDA PPU_CONTROL_STATUS
-:
-  BNE :-
-
+@old_busy_loop:
+  BNE @new_busy_loop
+@after_old_busy_loop:
 ; FCB5
 LDA PPU_MASK_STATUS
 AND #$E7
@@ -1674,10 +1722,11 @@ RTS
 ;   STA PpuControl_2000
 ;   STA PPU_CONTROL_STATUS
   JSL set_vm_increment_mode_1
-  nops 3
-  nops 2
+  nops 1
+  ; nops 2
   
   LDA $00
+  AND #$27
   STA VMADDH ; PpuAddr_2006
   LDY #$00
   STY VMADDL ; PpuAddr_2006
@@ -1694,6 +1743,7 @@ RTS
   BNE :-
   LDY $02
   LDA $00
+  AND #$27
   CMP #$20
   BCC :++
   ADC #$02
@@ -2012,7 +2062,7 @@ JSL check_for_bg_chr_bankswap
   BNE :-
   NOP
   NOP
-  NOP
+  ; NOP
   NOP
   NOP
   NOP

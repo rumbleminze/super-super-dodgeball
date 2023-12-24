@@ -1225,7 +1225,8 @@ nops 1
   STA $57
   
   ; STA VMDATAL
-  JSL handle_ppu_write
+  JSL handle_ppu_write_end_credits
+  ; JSL handle_ppu_write
   inc $53
   INY
   CPY #$20

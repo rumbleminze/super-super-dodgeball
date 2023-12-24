@@ -35,6 +35,7 @@ load_palette_v2:
   LDY #$00
   LDA #$00
   ORA PALETTE_OFFSET
+  STA CURR_PALETTE_ADDR
   STA CGADD
 
 palette_entry_v2:
@@ -51,19 +52,24 @@ palette_entry_v2:
   TYA
   AND #$03
   BNE :+
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
+
+  CLC
+  LDA CURR_PALETTE_ADDR
+  ADC #$10
+  STA CGADD
+  STA CURR_PALETTE_ADDR
 :
   TYA
   AND #$0F
   CMP #$00
   BNE :+
   ; after 16 entries we write an empty set of palettes
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set  
+  CLC
+  LDA CURR_PALETTE_ADDR
+  ADC #$40
+  STA CGADD
+  STA CURR_PALETTE_ADDR
+
 :
   CPY #$10
   BNE palette_entry_v2
@@ -182,6 +188,7 @@ load_tile_palette_from_4_addresses:
   PLB
   LDY #$00
   STZ CGADD
+  STZ CURR_PALETTE_ADDR
 
   LDA $02
   STA SPRITE_LOOKUP_LB
@@ -199,9 +206,11 @@ load_tile_palette_from_4_addresses:
   CPY #$04
   BNE :-
 ; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
+  CLC
+  LDA CURR_PALETTE_ADDR
+  ADC #$10
+  STA CGADD
+  STA CURR_PALETTE_ADDR
 
   LDY #$00
   LDA $04
@@ -221,9 +230,11 @@ load_tile_palette_from_4_addresses:
   BNE :-
 
 ; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
+  CLC
+  LDA CURR_PALETTE_ADDR
+  ADC #$10
+  STA CGADD
+  STA CURR_PALETTE_ADDR
 
   LDY #$00
   LDA $06
@@ -243,9 +254,11 @@ load_tile_palette_from_4_addresses:
   BNE :-
   
 ; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
+  CLC
+  LDA CURR_PALETTE_ADDR
+  ADC #$10
+  STA CGADD
+  STA CURR_PALETTE_ADDR
 
   LDY #$00
   LDA $08
@@ -264,17 +277,6 @@ load_tile_palette_from_4_addresses:
   CPY #$04
   BNE :-
   
-; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-
-  ; after 16 entries we write an empty set of palettes
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set  
-
   PLB
   PLA
   PLY
@@ -300,6 +302,7 @@ load_sprite_palette:
   LDY #$00
   LDA #$80
   STA CGADD
+  STA CURR_PALETTE_ADDR
 
   LDA $02
   STA SPRITE_LOOKUP_LB
@@ -317,9 +320,11 @@ load_sprite_palette:
   CPY #$04
   BNE :-
 ; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
+  CLC
+  LDA CURR_PALETTE_ADDR
+  ADC #$10
+  STA CGADD
+  STA CURR_PALETTE_ADDR
 
   LDY #$00
   LDA $04
@@ -339,9 +344,12 @@ load_sprite_palette:
   BNE :-
 
 ; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
+  CLC
+  LDA CURR_PALETTE_ADDR
+  ADC #$10
+  STA CGADD
+  STA CURR_PALETTE_ADDR
+
 
   LDY #$00
   LDA $06
@@ -361,9 +369,12 @@ load_sprite_palette:
   BNE :-
   
 ; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
+  CLC
+  LDA CURR_PALETTE_ADDR
+  ADC #$10
+  STA CGADD
+  STA CURR_PALETTE_ADDR
+
 
   LDY #$00
   LDA $08
@@ -381,17 +392,6 @@ load_sprite_palette:
   INY  
   CPY #$04
   BNE :-
-  
-; every 4 we need to write a bunch of empty palette entries
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-
-  ; after 16 entries we write an empty set of palettes
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set
-  jsr write_empty_palette_set  
 
   PLB
   PLA
@@ -400,21 +400,16 @@ load_sprite_palette:
 
   RTL
 
+zero_all_palette:
+  LDY #$00
+  LDX #$02
 
-write_empty_palette_set:
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  JSR write_empty_palette_row
-  RTS
+  STZ CGADD
 
-write_empty_palette_row:
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  STZ CGDATA
-  RTS
+: STZ CGDATA
+  DEY
+  BNE :-
+  DEX
+  BNE :-
+
+  RTL
