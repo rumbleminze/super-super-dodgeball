@@ -72,6 +72,7 @@ func main() {
 	for i := 8; i < 16; i++ {
 		var bankFile, _ = os.Create(fmt.Sprintf("chrom-tiles-%d.asm", i-8))
 		defer bankFile.Close()
+		bankFile.WriteString(fmt.Sprintf(".segment \"PRGA%X\"\n", i))
 		for byteIndex := 0; byteIndex < len(banks[i]); byteIndex += 0x10 {
 			if byteIndex%0x1000 == 0 {
 				bankFile.WriteString(fmt.Sprintf("chrom_bank_%d_tileset_%d:\n", i-8, tileset))
