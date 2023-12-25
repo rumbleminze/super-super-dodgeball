@@ -27,7 +27,7 @@ handle_ppu_write_end_credits:
   
 : RTL
 
-
+; assumes $54 is VMADDH, $53 is VMADDL, and $57 is VMDATAL
 handle_ppu_write:
 
   LDA $54
@@ -52,6 +52,7 @@ handle_ppu_writes_as_attribute:
 
   ; lo address determines which hb of memory we start in
   LDA ATTR_LO_ADDR
+  PHA
   AND #$30
   LSR
   LSR
@@ -88,7 +89,7 @@ AND #$03
 ASL
 ASL
 STA ATTR_CURR_ATTR_VALUE
-JSL write_quartile
+JSR write_quartile
 
 LDA ATTR_VALUE
 AND #$0C
@@ -123,6 +124,7 @@ ADC #$42
 STA ATTR_CURR_VM_WRITE_LB
 ; HB should still be fine.
 JSR write_quartile
+
 PLA
 PLX
 PLY
@@ -207,5 +209,42 @@ set_middle_attributes_to_palette_3:
 
   RTL
 
+set_middle_attributes_to_palette_0:
+  LDA #$80
+  STA VMAIN
+
+  ; fixed A value, increment B
+  LDA #$09
+  sta DMAP0
+
+  LDA #$20
+  STA VMADDH
+  LDA #$00
+  STZ VMADDL
+
+  LDA #$19
+  STA BBAD0
+
+  LDA #$A0
+  STA A1B0
+
+  LDA #>(dma_values + 1)
+  STA A1T0H
+  LDA #<(dma_values + 1)
+  STA A1T0L
+
+  LDA #$40
+  STA DAS0H  
+  STZ DAS0L
+
+  LDA #$01
+  STA MDMAEN
+
+  LDA VMAIN_STATUS
+  STA VMAIN
+
+  RTL
+
+
   dma_values:
-  .byte $0C, $01, $02, $03
+  .byte $0C, $00, $02, $03

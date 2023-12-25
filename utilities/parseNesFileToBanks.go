@@ -7,6 +7,21 @@ import (
 	"os"
 )
 
+// This utility will take an NES rom as input, and split it up into 4k banks
+// It currently assumes a lot about the game, and is set up to parse the game
+// Super Dodge Ball, a MMC1 game, where banks 8+ are CHR ROM banks and within those banks
+// banks at memory 1A000 - 1FFFF are data and 8000 - 19FFF are tiles.  It will automatically
+// convert the 2bpp tiles into 4bpp SNES format, but leave the data parts as is.
+//
+// For all banks it'll break up and label every 0x100 bytes, as well as setting a segment directive
+//
+// This script also assumes that the file will have a 16 byte header that we skip.
+//
+// It very naively will just print out the code as:
+//
+// .byte $HL, $HL, ......
+//
+// with 16 bytes per line
 func main() {
 	inputFile := flag.String("in", "Super Dodge Ball (U).nes", "input file to split out")
 

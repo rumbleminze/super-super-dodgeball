@@ -269,12 +269,41 @@
 
 ; 8E00 - bank 4
 .byte $48, $29, $0F, $C9, $0F, $D0, $06, $68, $29, $F0, $09, $09, $48, $68, $60, $A9
-.byte $59, $60, $A5, $70, $29, $20, $D0, $01, $60, $A9, $00, $8D, $87, $05, $8D, $88
-.byte $05, $8D, $89, $05, $8D, $8A, $05, $8D, $8B, $05, $8D, $C2, $00, $8D, $C3, $00
-.byte $8D, $C4, $00, $20, $8A, $FE, $20, $B5, $FC, $20, $2E, $DB, $20, $F1, $DB, $A9
-.byte $0F, $20, $65, $FA, $A9, $22, $8D, $06, $20, $A9, $68, $8D, $06, $20, $A9, $B8
-.byte $8D, $07, $20, $A9, $22, $8D, $06, $20, $A9, $77, $8D, $06, $20, $A9, $B8, $8D
-.byte $07, $20, $A9, $FF, $8D, $9D, $06, $20, $23, $90, $A9, $00, $8D, $37, $04, $8D
+.byte $59, $60, $A5, $70, $29, $20, $D0, $01, $60
+
+  LDA #$00
+  STA $0587
+  STA $0588
+  STA $0589
+  STA $058A
+  STA $058B
+  STA $00C2
+  STA $00C3
+  STA $00C4
+  nops 3
+  JSR $FE8A
+  JSR $FCB5
+  JSR $DB2E
+  JSR $DBF1
+  LDA #$0F
+  JSR $FA65
+  LDA #$22
+  STA VMADDH
+  LDA #$68
+  STA VMADDL
+  LDA #$B8
+  STA VMDATAL
+  LDA #$22
+  STA VMADDH
+  LDA #$77
+  STA VMADDL
+  LDA #$B8
+  STA VMDATAL
+  LDA #$FF
+  STA $069D
+  JSR $9023
+
+.byte $A9, $00, $8D, $37, $04, $8D
 .byte $6F, $04, $8D, $A7, $04, $8D, $D7, $04, $8D, $9E, $06, $A2, $00, $20, $EF, $90
 .byte $A2, $01, $20, $EF, $90, $A2, $00, $A9, $3F, $20, $86, $90, $A2, $01, $A9, $3F
 .byte $20, $86, $90, $20, $4E, $DB, $20, $A0, $FC, $20, $8A, $FE, $20, $BF, $FC, $A9
@@ -291,9 +320,28 @@
 .byte $A5, $70, $29, $FD, $85, $70, $20, $4E, $DB, $4C, $25, $8F, $20, $A4, $FB, $20
 .byte $50, $FA, $20, $DB, $DB, $EE, $9E, $06, $AD, $9E, $06, $29, $03, $D0, $90, $A5
 .byte $F5, $29, $20, $F0, $06, $20, $CC, $99, $4C, $33, $8E, $AD, $88, $05, $2D, $89
-.byte $05, $30, $03, $4C, $BF, $8E, $A9, $00, $20, $15, $FA, $60, $E4, $28, $24, $29
-.byte $64, $29, $A4, $29, $E4, $29, $24, $2A, $64, $2A, $A4, $2A, $E4, $2A, $F3, $28
-.byte $33, $29, $73, $29, $B3, $29, $F3, $29, $33, $2A, $73, $2A, $B3, $2A, $F3, $2A
+.byte $05, $30, $03, $4C, $BF, $8E, $A9, $00, $20, $15, $FA, $60
+
+; 2p arrow addresses, adjusted by -0x0800 
+.byte $E4, $20
+.byte $24, $21
+.byte $64, $21
+.byte $A4, $21
+.byte $E4, $21
+.byte $24, $22
+.byte $64, $22
+.byte $A4, $22
+.byte $E4, $22
+.byte $F3, $20
+.byte $33, $21
+.byte $73, $21
+.byte $B3, $21
+.byte $F3, $21
+.byte $33, $22
+.byte $73, $22
+.byte $B3, $22
+.byte $F3, $22
+
 .byte $AD, $9E, $06, $29, $01, $8D, $87, $05, $AE, $87, $05, $B5, $F5, $29, $DC, $D0
 .byte $03, $4C, $22, $90, $A8, $29, $80, $F0, $15, $A9, $10, $20, $15, $FA, $BD, $88
 .byte $05, $09, $80, $9D, $88, $05, $A9, $3F, $20, $86, $90, $4C, $22, $90, $98, $29
@@ -314,10 +362,30 @@
 .byte $FC, $06, $8D, $9C, $06, $60, $00, $01, $02, $03, $04, $05, $07, $06, $08, $00
 .byte $01, $02, $03, $04, $05, $08, $07, $06, $A0, $00, $AD, $9E, $06, $29, $04, $F0
 .byte $02, $A0, $3F, $84, $4E, $AD, $9E, $06, $29, $01, $AA, $BD, $88, $05, $30, $05
-.byte $A5, $4E, $20, $86, $90, $60, $48, $BD, $8A, $05, $0A, $A8, $E0, $01, $F0, $11
-.byte $B9, $4D, $8F, $8D, $06, $20, $B9, $4C, $8F, $8D, $06, $20, $68, $8D, $07, $20
-.byte $60, $B9, $5F, $8F, $8D, $06, $20, $B9, $5E, $8F, $8D, $06, $20, $68, $8D, $07
-.byte $20, $60, $BD, $ED, $06, $10, $37, $BD, $8A, $05, $0A, $A8, $B9, $1F, $99, $85
+.byte $A5, $4E, $20, $86, $90, $60
+
+  PHA
+  LDA $058A,X
+  ASL
+  TAY
+  CPX #$01
+  BEQ :+
+  LDA $8F4D,Y
+  STA VMADDH
+  LDA $8F4C,Y
+  STA VMADDL
+  PLA
+  STA VMDATAL
+  RTS
+: LDA $8F5F,Y
+  STA VMADDH
+  LDA $8F5E,Y
+  STA VMADDL
+  PLA
+  STA VMDATAL
+  RTS
+
+.byte $BD, $ED, $06, $10, $37, $BD, $8A, $05, $0A, $A8, $B9, $1F, $99, $85
 .byte $61, $B9, $20, $99, $85, $62, $E0, $01, $F0, $12, $B9, $4D, $8F, $8D, $06, $20
 .byte $B9, $4C, $8F, $18, $69, $01, $8D, $06, $20, $4C, $EB, $90, $B9, $5F, $8F, $8D
 .byte $06, $20, $B9, $5E, $8F, $18, $69, $01, $8D, $06, $20, $4C, $30, $91, $60, $BD
@@ -1013,6 +1081,7 @@
   LDA $A66A,X
   STA $62
   LDY #$00
+
   LDA #$23
   LDX #$D0
   STA VMADDH
@@ -1021,14 +1090,24 @@
   LDA VMDATALREAD
   AND #$3F
   ORA ($61),Y
-  STA $02
+  ; STA $02
+  STA ATTR_VALUE
+
+
   LDA #$23
   LDX #$D0
-  STA VMADDH
-  STX VMADDL
-  LDA $02
-  STA VMDATAL
+
+  STA $54
+  STX $53
+  JSL handle_ppu_writes_as_attribute
+  nops 3
+  ; STA VMADDH
+  ; STX VMADDL
+  ; LDA $02
+  ; STA VMDATAL
+
   INY
+
   LDA #$23
   LDX #$D1
   STA VMADDH
@@ -1037,14 +1116,22 @@
   LDA VMDATALREAD
   AND #$CF
   ORA ($61),Y
-  STA $02
+  ; STA $02
+  STA ATTR_VALUE
+
   LDA #$23
   LDX #$D1
-  STA VMADDH
-  STX VMADDL
-  LDA $02
-  STA VMDATAL
+  STA $54
+  STX $53
+  JSL handle_ppu_writes_as_attribute
+  nops 3
+  ; STA VMADDH
+  ; STX VMADDL
+  ; LDA $02
+  ; STA VMDATAL
+
   INY
+
   LDA #$23
   LDX #$D4
   STA VMADDH
@@ -1053,14 +1140,21 @@
   LDA VMDATALREAD
   AND #$3F
   ORA ($61),Y
-  STA $02
+  ; STA $02
+  STA ATTR_VALUE
+
   LDA #$23
   LDX #$D4
-  STA VMADDH
-  STX VMADDL
-  LDA $02
-  STA VMDATAL
+  STA $54
+  STX $53
+  JSL handle_ppu_writes_as_attribute
+  nops 3
+  ; STA VMADDH
+  ; STX VMADDL
+  ; LDA $02
+  ; STA VMDATAL
   INY
+
   LDA #$23
   LDX #$D5
   STA VMADDH
@@ -1069,13 +1163,20 @@
   LDA VMDATALREAD
   AND #$CF
   ORA ($61),Y
-  STA $02
+  ; STA $02
+  STA ATTR_VALUE
+
   LDA #$23
   LDX #$D5
-  STA VMADDH
-  STX VMADDL
-  LDA $02
-  STA VMDATAL
+  STA $54
+  STX $53
+  JSL handle_ppu_writes_as_attribute
+  nops 3
+  ; STA VMADDH
+  ; STX VMADDL
+  ; LDA $02
+  ; STA VMDATAL
+
   RTS
 
 ; a669

@@ -1553,15 +1553,23 @@ nops 18
 .byte $4E, $A6, $4E, $E4, $50, $D0, $F3, $C4, $4F, $D0, $EF, $60
 
 ; attributes, needs to be updated.
-  LDY #$40
-  LDA #$2B
-  STA VMADDH
-  LDA #$C0
-  STA VMADDL
-  LDA #$FF
-: STA VMDATAL
-  DEY
-  BPL :-
+;  doing this causes 2 things
+; 1 - all attributes use palette 3
+; 2 - H/V Offset is set back to 0
+;   LDY #$40
+;   LDA #$2B
+;   STA VMADDH
+;   LDA #$C0
+;   STA VMADDL
+;   LDA #$FF
+; : STA VMDATAL
+;   DEY
+;   BPL :-
+  JSL set_middle_attributes_to_palette_3
+  JSL reset_HV_OFFS_to_0
+  STZ NES_H_SCROLL
+  STZ NES_V_SCROLL
+  nops 8
   RTS
 
 .byte $A2, $06, $BD, $9D, $F9, $9D, $F0, $07, $CA, $10, $F7, $60, $4B, $55, $4D

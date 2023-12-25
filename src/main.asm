@@ -16,6 +16,7 @@ nmi_count: .res 2
 
 .segment "EMPTY_SPACE"
 .include "2a03_emulator_first_8000.asm"
+; .include "2a03_emulator_first_8000_v2.asm"
 .include "2a03_emulator_second_8000.asm"
 
 .include "bank-snes.asm"
