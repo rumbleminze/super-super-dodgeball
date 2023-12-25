@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-export PATH=$PATH:/c/projects/romhacking/cc65-snapshot-win32/bin
+export PATH=$PATH:../cc65-snapshot-win32/bin
 set -e
 
 cd "$(dirname "$0")"
