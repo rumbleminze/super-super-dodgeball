@@ -15,7 +15,7 @@ And 16 `.asm` files will be generated.  You can ignore the bankx.asm ones.  Copy
 
 ## Prerequisites
 
-* [cc65](https://www.cc65.org/) - the 65c816 compiler and linker, available 
+* [cc65](https://www.cc65.org/) - the 65c816 compiler and linker
 * [go](https://go.dev/) - in order to generate the chr rom files
 
 

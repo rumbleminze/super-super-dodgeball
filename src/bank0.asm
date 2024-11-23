@@ -1252,7 +1252,7 @@ new_sound_routine:
   PHK
   PLB
   JSR $8003
-  JSL convert_audio
+  jslb convert_audio, $a0
   PLB
   PLP
   RTS

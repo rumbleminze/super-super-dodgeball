@@ -9,7 +9,7 @@ TXS
 LDA #$A0
 PHA
 PLB
-JSL $A08000
+jsl $A08000
 JML $A1FFE8
 
 ; below is trash while I tested something
@@ -37,7 +37,7 @@ nmi:
     PHA
     PHX
     PHY
-    JSL snes_nmi
+    jslb snes_nmi, $a0
     ; jump to NES NMI
     CLC
     LDA ACTIVE_NES_BANK

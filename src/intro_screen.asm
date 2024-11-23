@@ -72,7 +72,7 @@ do_intro:
     STA CHR_BANK_BANK_TO_LOAD
     LDA #$01
     STA CHR_BANK_TARGET_BANK
-    JSL load_chr_table_to_vm
+    jslb load_chr_table_to_vm, $a0
 
     LDA VMAIN_STATUS
     AND #$0F
@@ -80,8 +80,7 @@ do_intro:
 
     JSR write_intro_palette
     JSR write_intro_tiles
-    JSL set_middle_attributes_to_palette_0
-    ; JSL set_middle_attributes_to_palette_3
+    jslb set_middle_attributes_to_palette_0, $a0
     LDA #$0F
     STA INIDISP
 

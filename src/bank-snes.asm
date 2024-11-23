@@ -127,7 +127,7 @@ initialize_registers:
   ; JSR clearvm
   JSR zero_oam  
   JSR dma_oam_table
-  JSL zero_all_palette
+  jslb zero_all_palette, $a0
 
   LDA #$04
   STA OBSEL
@@ -176,7 +176,7 @@ initialize_registers:
   ; STZ COL_ATTR_HAS_VALUES
   ; STZ COLUMN_1_DMA
 
-  JSL upload_sound_emulator_to_spc
+  jsl upload_sound_emulator_to_spc
 
   ; LDA #$A1
   ; PHA
@@ -185,50 +185,50 @@ initialize_registers:
   STA CHR_BANK_BANK_TO_LOAD
   LDA #$00
   STA CHR_BANK_TARGET_BANK
-  JSL load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
     
   LDA #$0a
   STA CHR_BANK_BANK_TO_LOAD
   LDA #$01
   STA CHR_BANK_TARGET_BANK
-  JSL load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
     
   LDA #$0A
   STA CHR_BANK_BANK_TO_LOAD
   LDA #$03
   STA CHR_BANK_TARGET_BANK
-  JSL load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
 
   LDA #$0D
   STA CHR_BANK_BANK_TO_LOAD
   LDA #$04
   STA CHR_BANK_TARGET_BANK
-  JSL load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
   
   LDA #$0B
   STA CHR_BANK_BANK_TO_LOAD
   LDA #$05
   STA CHR_BANK_TARGET_BANK
-  JSL load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
   
   LDA #$19
   STA CHR_BANK_BANK_TO_LOAD
   LDA #$06
   STA CHR_BANK_TARGET_BANK
-  JSL load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
 
   LDA #$1B
   STA CHR_BANK_BANK_TO_LOAD
   STA DATA_CHR_BANK_CURR
   LDA #$07
   STA CHR_BANK_TARGET_BANK
-  JSL load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
 
   JSR clearvm
-  JSL check_for_chr_bankswap
-  JSL check_for_bg_chr_bankswap
+  jslb check_for_chr_bankswap, $a0
+  jslb check_for_bg_chr_bankswap, $a0
 
-  JSL set_middle_attributes_to_palette_3
+  jslb set_middle_attributes_to_palette_3, $a0
 
   JSR do_intro
 
@@ -255,7 +255,7 @@ clearvm:
 snes_nmi:
   LDA RDNMI
   JSR dma_oam_table  
-  JSL hud_hdma_setup
+  jslb hud_hdma_setup, $a0
   ; JSR translate_nes_sprites_to_oam
   RTL
 
@@ -543,7 +543,7 @@ new_data_bank:
 
   STZ CHR_BANK_TARGET_BANK
   INC CHR_BANK_TARGET_BANK
-  JSL load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
 
   PLB
   RTL
@@ -553,17 +553,21 @@ bankswitch_obj_chr_data:
   STZ NES_H_SCROLL
 
   PHB
-  LDA #$A0
-  PHA
+  PHK
   PLB
 
   LDY #$00
-: LDA CHR_BANK_LOADED_TABLE, y
+: CPY #$01
+  BEQ skip_bg_vram
+  CPY #$02
+  BEQ skip_bg_vram
+
+  LDA CHR_BANK_LOADED_TABLE, y
   CMP CHR_BANK_BANK_TO_LOAD
   BEQ switch_to_y
-  CPY #$06
+  CPY #$07
   BEQ new_obj_bank
-  INY
+skip_bg_vram:
   INY
   BRA :-
 
@@ -578,7 +582,7 @@ new_obj_bank:
   LDA target_obj_banks, Y
   STA CHR_BANK_TARGET_BANK
   PHA
-  jsl load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
 
   LDA CHR_BANK_BANK_TO_LOAD
   CMP #$0C
@@ -594,7 +598,7 @@ new_obj_bank:
   STA CHR_BANK_BANK_TO_LOAD
   LDA #$04
   STA CHR_BANK_TARGET_BANK
-  jsl load_chr_table_to_vm
+  jslb load_chr_table_to_vm, $a0
 
 : 
   LDA INIDISP_STATE
@@ -607,8 +611,12 @@ switch_to_y:
   ; our target bank is loaded at #$y000
   ; so just update our obj definition to use that for sprites
   TYA
+  STZ OBJ_CHR_HB
+  CLC
   LSR ; for updating obsel, we have to halve y.  
-  STA OBSEL
+  BCC :+
+  INC OBJ_CHR_HB
+: STA OBSEL
   PLB
   RTL
 
@@ -685,22 +693,40 @@ dma_chr_to_vm:
 ; which bank we should swap the sprite into, 00 - 0A aren't sprites so we set it to 0
 ; we only use 00, 10, and 11 for sprite locations, which are 00, 04, and 06
 target_obj_banks:
-.byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-.byte $00 ; 0B - court screen
-.byte $04 ; 0C - travel screen
-.byte $06 ; 0D - Player sprites
-.byte $06 ; 0E - Player sprites
-.byte $06 ; 0F - Player sprites
-.byte $06 ; 10 - Player sprites
-.byte $06 ; 11 - Player sprites
-.byte $06 ; 12 - Player sprites
-.byte $06 ; 13 - Player sprites
-.byte $06 ; 14 - Player sprites
-.byte $06 ; 15 - Player sprites
-.byte $06 ; 16 - Player sprites
-.byte $04 ; 17 - match over
-.byte $00 ; 18 - 1950s Russia background
-.byte $00 ; 19 - Name entry?
+.byte $00 ; 00 - Sprites
+.byte $00 ; 01 - Sprites
+.byte $00 ; 02 - Sprites
+.byte $00 ; 03 - Sprites
+.byte $00 ; 04 - Sprites
+.byte $00 ; 05 - Sprites
+.byte $00 ; 06 - Sprites
+.byte $00 ; 07 - Sprites
+.byte $00 ; 08 - Sprites
+.byte $00 ; 09 - Sprites
+.byte $00 ; 0A - Sprites
+.byte $00 ; 0B - Sprites
+.byte $04 ; 0C - Sprites
+.byte $06 ; 0D - Sprites / Letters
+.byte $06 ; 0E - Sprites / Letters
+.byte $06 ; 0F - Sprites / Letters
+.byte $00 ; 10 - BG Tiles
+.byte $00 ; 11 - BG Tiles
+.byte $00 ; 12 - BG Tiles
+.byte $00 ; 13 - BG Tiles
+.byte $00 ; 14 - BG Tiles
+.byte $00 ; 15 - BG Tiles
+.byte $00 ; 16 - BG Tiles
+.byte $00 ; 17 - BG Tiles
+.byte $00 ; 18 - BG Tiles
+.byte $00 ; 19 - BG Tiles
+.byte $00 ; 1A - BG Tiles
+.byte $00 ; 1B - BG Tiles
+.byte $00 ; 1C - BG Tiles
+.byte $00 ; 1D - BG Tiles
+.byte $00 ; 1E - BG Tiles
+.byte $00 ; 1F - BG Tiles
+
+
 
 
 

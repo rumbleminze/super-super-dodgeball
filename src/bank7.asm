@@ -397,7 +397,7 @@
 ;   STA VMADDL
 ;   LDA $57
 ;   STA VMDATAL
-  JSL handle_ppu_write
+  jslb handle_ppu_write, $a0
   nops 11
 
   LDA $53
@@ -428,8 +428,6 @@
   LDA $4E
   ADC #$60
 
-;   JSL read_chr_data
-;   nops 12
   STA $56
   STA VMADDH
   LDA $55
@@ -594,13 +592,13 @@
 ;   LDA #$00
 ;   STA $2005
 ;   STA $2005
-  JSL reset_HV_OFFS_to_0
+  jslb reset_HV_OFFS_to_0, $a0
 ;   LDA PPU_CONTROL_STATUS
 ;   AND #$FC
 ;   STA $2000
 ;   STA PPU_CONTROL_STATUS
   nops 9
-  JSL set_vm_incr_to_1_and_reset_nametable_and_store
+  jslb set_vm_incr_to_1_and_reset_nametable_and_store, $a0
 
   RTS
 
@@ -697,7 +695,7 @@
 
 ; DF7F
   PLA
-  JSL change_ppu_vblank_status
+  jslb change_ppu_vblank_status, $a0
 ;   STA $2000
 ;   STA $FF
   NOP
@@ -741,7 +739,7 @@
 ;   INY
 ;   CPY #$10
 ;   BCC :-
-  JSL load_palette
+  jslb load_palette, $a0
   nops 18
 @nes_e03a:
   LDA #$3F
@@ -753,7 +751,7 @@
   RTS
 
 ; E04b - sprite palettes 
-  JSL load_sprite_palette
+  jslb load_sprite_palette, $a0
 ;   LDA #$3F
 ;   STA VMADDH
 ;   LDA #$10
@@ -879,7 +877,7 @@
   STA VMADDL
   STX $0107
 
-  JSL set_vm_incr_to_1_and_store
+  jslb set_vm_incr_to_1_and_store, $a0
 ;   LDA $FF
 ;   AND #$FB
 ;   STA $FF
@@ -1395,7 +1393,7 @@ NOP
 .byte $55, $F5, $60, $A9, $00, $20, $3E, $F5, $A9, $00, $20, $55, $F5, $60
 
 ; F53E
-  JSL handle_arrow_game_type
+  jslb handle_arrow_game_type, $a0
 ;   PHA
 ;   LDA $06B1
 ;   ASL A
@@ -1410,7 +1408,7 @@ NOP
   RTS
 
   ; F555
-  JSL handle_arrow_difficulty
+  jslb handle_arrow_difficulty, $a0
 ;   PHA
 ;   LDA $06EA
 ;   ASL A
@@ -1487,7 +1485,7 @@ nops 18
   STA $75
 
   ; write palette data
-  JSL load_palette_from_74
+  jslb load_palette_from_74, $a0
   nops 27
 
 ;   LDA #$3F
@@ -1523,7 +1521,7 @@ nops 18
   LDA $F879,Y
   STA $75
 
-  JSL load_sprite_palette_from_74
+  jslb load_sprite_palette_from_74, $a0
   nops 27
 ;   LDA #$3F
 ;   STA PpuAddr_2006
@@ -1575,8 +1573,8 @@ nops 18
 ; : STA VMDATAL
 ;   DEY
 ;   BPL :-
-  JSL set_middle_attributes_to_palette_3
-  JSL reset_HV_OFFS_to_0
+  jslb set_middle_attributes_to_palette_3, $a0
+  jslb reset_HV_OFFS_to_0, $a0
   STZ NES_H_SCROLL
   STZ NES_V_SCROLL
   nops 8
@@ -1662,8 +1660,8 @@ nops 18
     JMP @return_from_stack_shenanigans
 
 @new_game_busy_loop:
-  JSL turn_off_nmi_dont_store
-  JSL snes_busy_loop
+  jslb turn_off_nmi_dont_store, $a0
+  jslb snes_busy_loop, $a0
   LDA NMITIMEN_STATUS
   STA NMITIMEN
 : LDA $0106
@@ -1671,12 +1669,12 @@ nops 18
   JML @new_game_busy_loop_return
 
 @title_screen_busy:
-    JSL snes_busy_loop
+    jslb snes_busy_loop, $a0
 :   JMP :-
 
 @new_busy_loop:
-    JSL turn_off_nmi_dont_store
-    JSL snes_busy_loop
+    jslb turn_off_nmi_dont_store, $a0
+    jslb snes_busy_loop, $a0
     LDA NMITIMEN_STATUS
     STA NMITIMEN
 :   BRA :-
@@ -1699,7 +1697,7 @@ nops 18
 ;   ORA #$80
 ;   STA PPU_CONTROL_STATUS
 ;   STA PpuControl_2000
-  JSL turn_on_nmi_and_store
+  jslb turn_on_nmi_and_store, $a0
   STA NMITIMEN
   LDA PPU_CONTROL_STATUS
 @old_busy_loop:
@@ -1710,7 +1708,7 @@ LDA PPU_MASK_STATUS
 AND #$E7
 ; STA $FE
 ; STA PpuMask_2001
-JSL change_ppu_mask_status
+jslb change_ppu_mask_status, $a0
 nops 1
 
 RTS
@@ -1725,11 +1723,11 @@ RTS
 ;   STA BG1HOFS ; $2005
 ;   LDA NES_V_SCROLL
 ;   STA BG1VOFS ; $2005
-  JSL update_HV_OFFS
+  jslb update_HV_OFFS, $a0
 
 ;   LDA PPU_CONTROL_STATUS
 ;   STA $2000
-  JSL handle_ppu_nmi_status_without_storing
+  jslb handle_ppu_nmi_status_without_storing, $a0
   nops 1
 
   RTS
@@ -1745,7 +1743,7 @@ RTS
 ;   AND #$FB
 ;   STA PpuControl_2000
 ;   STA PPU_CONTROL_STATUS
-  JSL set_vm_increment_mode_1
+  jslb set_vm_increment_mode_1, $a0
   nops 1
   ; nops 2
   
@@ -1822,7 +1820,7 @@ RTS
 ;   ORA #$80
 ;   STA $FF
 ;   STA $2000
-  JSL turn_on_nmi_and_store
+  jslb turn_on_nmi_and_store, $a0
   STA NMITIMEN
   LDA PPU_CONTROL_STATUS
   
@@ -1838,7 +1836,7 @@ RTS
 ;   STA PPU_CONTROL_STATUS
 ;   STA $2000  
 
-  JSL turn_off_nmi_and_store
+  jslb turn_off_nmi_and_store, $a0
   nops 5
   
   PLA
@@ -1871,7 +1869,7 @@ RTS
 
 ;   STA PPU_CONTROL_STATUS
 ;   STA $2000
-  JSL change_ppu_vblank_status
+  jslb change_ppu_vblank_status, $a0
   nops 1
 
   CLI
@@ -1886,7 +1884,7 @@ RTS
 
   LDA $69
   STA CHR_BANK_BANK_TO_LOAD
-  JSL bankswitch_obj_chr_data
+  jslb bankswitch_obj_chr_data, $a0
 ;   STA $BFFF
 ;   LSR A
 ;   STA $BFFF
@@ -1900,7 +1898,7 @@ RTS
   PLA
 ;   STA $FF
 ;   STA PpuControl_2000
-  JSL change_ppu_vblank_status
+  jslb change_ppu_vblank_status, $a0
   NOP
   CLI
   RTS
@@ -1914,10 +1912,8 @@ RTS
   JSR $FE8A
 
   LDA $69
-;   STA CHR_BANK_BANK_TO_LOAD
-;   JSL bankswitch_bg_chr_data
 STA BG_CHR_BANK_SWITCH
-JSL check_for_bg_chr_bankswap
+jslb check_for_bg_chr_bankswap, $a0
 
 ;   STA $DFFF
 ;   LSR
@@ -1935,7 +1931,7 @@ JSL check_for_bg_chr_bankswap
 
 ;   STA $FF
 ;   STA $2000
-  JSL change_ppu_vblank_status
+  jslb change_ppu_vblank_status, $a0
   NOP
 
   CLI
@@ -1948,7 +1944,7 @@ JSL check_for_bg_chr_bankswap
 ;   LDA PPU_CONTROL_STATUS
 ;   AND #$7F
 ;   STA $2000
-  JSL turn_off_nmi_dont_store
+  jslb turn_off_nmi_dont_store, $a0
   nops 1
 
   PLA
@@ -1988,7 +1984,7 @@ JSL check_for_bg_chr_bankswap
   PLA  
 ;   STA PPU_CONTROL_STATUS
 ;   STA $2000
-  jsl change_ppu_vblank_status
+  jslb change_ppu_vblank_status, $a0
   nops 1
   CLI
   RTS
@@ -2002,7 +1998,7 @@ JSL check_for_bg_chr_bankswap
 : BVC :+
   JMP $EF80
 
-: JSL turn_off_nmi_and_store
+: jslb turn_off_nmi_and_store, $a0
 ;   LDA PPU_CONTROL_STATUS
 ;   AND #$7F
 ;   STA PPU_CONTROL_STATUS

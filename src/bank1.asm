@@ -1080,7 +1080,7 @@
 .byte $0A, $A8, $A9, $F8, $18, $79, $00, $02, $99, $00, $02, $68, $18, $69, $01, $C9
 .byte $21, $90, $EB, $A9, $01, $20, $6A, $BD, $A9, $11, $20, $A0, $BC, $A9, $05, $20
 .byte $2B, $BD, $A9, $3E, $20, $6A, $BD
-  JSL set_ppu_mask_to_0
+  jslb set_ppu_mask_to_0, $a0
   nops 1
 ;   LDA #$00
 ;   STA TM ; STA PpuMask_2001
@@ -1107,7 +1107,7 @@
 
 ;   LDA #$1E
 ;   STA $2001
-JSL set_ppu_mask_to_1e
+jslb set_ppu_mask_to_1e, $a0
 nops 1
 
 
@@ -1225,8 +1225,7 @@ nops 1
   STA $57
   
   ; STA VMDATAL
-  JSL handle_ppu_write_end_credits
-  ; JSL handle_ppu_write
+  jslb handle_ppu_write_end_credits, $a0
   inc $53
   INY
   CPY #$20
@@ -1277,7 +1276,7 @@ nops 1
   LDA $BB8D,Y
   STA $52
 
-  JSL load_palette_from_51
+  jslb load_palette_from_51, $a0
   nops 43
 ;   LDA #$3F
 ;   STA $2006
@@ -1328,14 +1327,14 @@ nops 1
 
   ; updating palette
   
-  JSL load_sprite_palette_from_51
+  jslb load_sprite_palette_from_51, $a0
   nops 43
 ;   LDA #$3F
 ;   STA VMADDH
 ;   LDA #$10
 ;   STA VMADDL
 
-;   JSL set_vm_incr_to_1_and_store
+;   jslb set_vm_incr_to_1_and_store
 ;   nops 5
 ; ;   LDA $FF
 ; ;   AND #$FB
@@ -1382,7 +1381,7 @@ nops 1
 : LDA RDNMI
   AND #$80
   BEQ :-
-  JSL check_for_bg_chr_bankswap
+  jslb check_for_bg_chr_bankswap, $a0
 ;   STA $DFFF
 ;   LSR
 ;   STA $DFFF
@@ -1399,7 +1398,7 @@ nops 1
 
 
   STA CHR_BANK_BANK_TO_LOAD
-  JSL bankswitch_obj_chr_data
+  jslb bankswitch_obj_chr_data, $a0
 ;   LDA #$28
 ;   STA NES_H_SCROLL
 ;   STA $BFFF
@@ -1423,7 +1422,7 @@ nops 1
   LDA #$01
   JSR $BD6A
     
-  JSL set_ppu_mask_to_0
+  jslb set_ppu_mask_to_0, $a0
   nops 1
 ;   LDA #$00
 ;   STA PpuMask_2001
@@ -1441,7 +1440,7 @@ nops 1
 
 ;   LDA #$1E
 ;   STA PpuMask_2001
-  JSL set_ppu_mask_to_1e
+  jslb set_ppu_mask_to_1e, $a0
   nops 1
 
   LDY #$70

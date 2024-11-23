@@ -1099,7 +1099,7 @@
 
   STA $54
   STX $53
-  JSL handle_ppu_writes_as_attribute
+  jslb handle_ppu_writes_as_attribute, $a0
   nops 3
   ; STA VMADDH
   ; STX VMADDL
@@ -1123,7 +1123,7 @@
   LDX #$D1
   STA $54
   STX $53
-  JSL handle_ppu_writes_as_attribute
+  jslb handle_ppu_writes_as_attribute, $a0
   nops 3
   ; STA VMADDH
   ; STX VMADDL
@@ -1147,7 +1147,7 @@
   LDX #$D4
   STA $54
   STX $53
-  JSL handle_ppu_writes_as_attribute
+  jslb handle_ppu_writes_as_attribute, $a0
   nops 3
   ; STA VMADDH
   ; STX VMADDL
@@ -1170,7 +1170,7 @@
   LDX #$D5
   STA $54
   STX $53
-  JSL handle_ppu_writes_as_attribute
+  jslb handle_ppu_writes_as_attribute, $a0
   nops 3
   ; STA VMADDH
   ; STX VMADDL
@@ -1184,7 +1184,7 @@
 .byte $20, $C0, $30, $40, $10, $80, $20, $80, $20, $80, $20
 
 ; palette stuff
-  JSL load_tile_palette_from_4_addresses
+  jslb load_tile_palette_from_4_addresses, $a0
 ;   LDA #$3F
 ;   STA PpuAddr_2006
 ;   LDA #$00

@@ -23,7 +23,7 @@ handle_ppu_write_end_credits:
   CMP #$23
   BNE :+
 
-  JSL set_middle_attributes_to_palette_3
+  jslb set_middle_attributes_to_palette_3, $a0
   
 : RTL
 
