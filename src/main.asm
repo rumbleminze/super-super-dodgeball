@@ -36,3 +36,5 @@ nmi_count: .res 2
 .include "chrom-tiles-5.asm"
 .include "chrom-tiles-6.asm"
 .include "chrom-tiles-7.asm"
+
+.include "msu.asm"

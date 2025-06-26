@@ -7,7 +7,9 @@ init_routine:
 
 initialize_registers:
   setAXY16
-  setA8
+  setAXY8
+
+  jsr clear_buffers
 
   LDA #$80
   STA INIDISP
@@ -90,7 +92,6 @@ initialize_registers:
 
   LDA #$FF
   STA WRIO   
-  STZ OBJ_CHR_BANK_SWITCH
   
   LDA #$01
   STA BG_CHR_BANK_SWITCH
@@ -176,6 +177,15 @@ initialize_registers:
   ; STZ COL_ATTR_HAS_VALUES
   ; STZ COLUMN_1_DMA
 
+  STZ MSU_SELECTED
+  jslb check_if_msu_is_available, $b2
+  LDA MSU_AVAILABLE
+  beq :+
+    LDA #$01
+    STA MSU_SELECTED
+    jslb check_for_all_tracks_present, $b2
+  :
+
   jsl upload_sound_emulator_to_spc
 
   ; LDA #$A1
@@ -199,12 +209,6 @@ initialize_registers:
   STA CHR_BANK_TARGET_BANK
   jslb load_chr_table_to_vm, $a0
 
-  LDA #$0D
-  STA CHR_BANK_BANK_TO_LOAD
-  LDA #$04
-  STA CHR_BANK_TARGET_BANK
-  jslb load_chr_table_to_vm, $a0
-  
   LDA #$0B
   STA CHR_BANK_BANK_TO_LOAD
   LDA #$05
@@ -224,15 +228,24 @@ initialize_registers:
   STA CHR_BANK_TARGET_BANK
   jslb load_chr_table_to_vm, $a0
 
+  LDA #$0D
+  STA CHR_BANK_BANK_TO_LOAD
+  LDA #$04
+  STA CHR_BANK_TARGET_BANK
+  jslb load_chr_table_to_vm, $a0
+  jslb bankswitch_obj_chr_data, $a0
+
   JSR clearvm
-  jslb check_for_chr_bankswap, $a0
   jslb check_for_bg_chr_bankswap, $a0
 
   jslb set_middle_attributes_to_palette_3, $a0
 
+
+
   JSR do_intro
 
   RTL
+
 
 
 clearvm:
@@ -323,75 +336,6 @@ bankswap_table:
 .byte .lobyte(chrom_bank_7_tileset_31), .hibyte(chrom_bank_7_tileset_31), $AF
 
 : RTL
-check_for_chr_bankswap:
-
-  LDA OBJ_CHR_BANK_SWITCH
-  CMP #$FF
-  BEQ :-
-  CMP CHR_BANK_CURR_P1
-  BEQ :-
-
-  LDA OBJ_CHR_BANK_SWITCH
-  STA CHR_BANK_CURR_P1
-  ; LDA #$FF
-  ; STA OBJ_CHR_BANK_SWITCH
-  
-  PHB
-  LDA #$A0
-  PHA
-  PLB
-
-  ; looks like we need to switch CHR Banks
-  ; we fake this by DMA'ing tiles from the right tileset
-  ; multiply by 3 to get the offset
-  LDA CHR_BANK_CURR_P1
-  ASL A
-  ADC CHR_BANK_CURR_P1
-  TAY
-
-  LDA #$80
-  STA VMAIN
-
-  LDA #$01
-  STA DMAP0
-
-  LDA #$18
-  STA BBAD0
-
-  ; source LB
-  LDA bankswap_table, Y
-  STA A1T0L
-
-  ; source HB
-  INY
-  LDA bankswap_table, y
-  STA A1T0H
-
-  ; source DB
-  INY
-  LDA bankswap_table, y
-  STA A1B0
-
-  ; 0x2000 bytes
-  LDA #$20
-  STA DAS0H
-  STZ DAS0L
-
-  ; page 1 is at $0000
-  LDA #$00
-  STZ VMADDH
-  STZ VMADDL
-
-  LDA #$01
-  STA MDMAEN
-
-  PLB
-
-  LDA VMAIN_STATUS
-  STA VMAIN
-
-: RTL
-
 
 ; we'll put the data at $7000 always
 swap_data_bg_chr:
@@ -435,8 +379,6 @@ bankswap_start:
   
   LDA BG_CHR_BANK_SWITCH
   STA BG_CHR_BANK_CURR
-  ; LDA #$FF
-  ; STA OBJ_CHR_BANK_SWITCH
 
   PHB
   LDA #$A0
@@ -796,6 +738,42 @@ handle_arrow_difficulty:
 
   PLB
   RTL
+
+clear_buffers:
+  LDA #$00
+  LDY #$00
+  LDX #$FF
+
+: LDA #$00
+  STA $0800, Y
+  STA $0900, Y
+  STA $0A00, Y
+  STA $0B00, Y
+  STA $0C00, Y
+  STA $0D00, Y
+  STA $0E00, Y
+  STA $0F00, Y
+  
+  STA $1000, Y
+  STA $1100, Y
+  STA $1200, Y
+  STA $1300, Y
+  STA $1400, Y
+  STA $1500, Y
+  STA $1600, Y
+  STA $1700, Y
+  
+  STA $1800, Y
+  STA $1900, Y
+  STA $1A00, Y
+  STA $1B00, Y
+  STA $1C00, Y
+  STA $1D00, Y
+  STA $1E00, Y
+  STA $1F00, Y
+  DEY
+  BNE :-
+  RTS
 
 game_type_arrow:
 .byte $E3, $20 ; $28

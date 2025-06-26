@@ -7,7 +7,7 @@
 .byte $07, $F0, $04, $30, $1F, $D0, $3D, $8A
  
 ;   STA $4015
-STA NES_APU_CHAN_ENABLE
+jsr store_apu_enables ; STA NES_APU_CHAN_ENABLE
 
 .byte $A2, $B8, $9D, $FF, $06
 .byte $CA, $D0, $FA
@@ -23,7 +23,7 @@ STA NES_APU_CHAN_ENABLE
 .byte $07, $20, $0B, $84, $AE, $16, $07, $CA, $E0, $03, $D0, $F2, $A9, $1F
 
 ;  $8D, $15, $40
-STA NES_APU_CHAN_ENABLE
+jsr store_apu_enables ; STA NES_APU_CHAN_ENABLE
 
 .byte $4C, $E0, $80, $CA, $8A, $0A, $AA, $BD, $80, $87, $85, $61, $BD, $81, $87
 .byte $85, $62, $A0, $00, $B1, $61, $30, $13, $85, $63, $C8, $B1, $61, $30, $1C, $AA
@@ -87,7 +87,7 @@ STA NES_APU_CHAN_ENABLE
 .byte $60, $B1, $61, $9D, $81, $07, $C8, $60, $A9, $00
 
 ;  $8D, $15, $40
-STA $0B15
+jsr store_apu_enables ; STA $0B15
 
 .byte $AD, $00, $07
 .byte $09, $40, $8D, $00, $07, $60, $8A, $0A, $0A, $AA, $E8, $B1, $61, $9D, $94, $07
@@ -117,13 +117,13 @@ STA $0B15
   AND #$0F
   TAY
   LDA $0794,X
-  STA $0B00,Y
+    STA $0B00,Y
   LDA $0795,X
-  STA $0B01,Y
+    STA $0B01,Y
   LDA $0796,X
-  STA $0B02,Y
+    STA $0B02,Y
   LDA $0797,X
-  STA $0B03,Y
+    STA $0B03,Y
 : LDX $0716
   LDA #$00
   STA $06FE,X
@@ -1257,8 +1257,15 @@ new_sound_routine:
   PLP
   RTS
 
+store_apu_enables:
+  STA $0B15
+  PHA
+  jslb convert_audio, $a0
+  PLA
+  rts
+
 .byte $00, $00
-.byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+.byte $00, $00, $00, $00, $00, $00;, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00

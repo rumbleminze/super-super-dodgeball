@@ -498,7 +498,8 @@ WaitSPC700Ready:
   lda #$D7
   sta APUIO0               ; tell SPC that CPU is ready
 WSPC700Reply:
-  cmp APUIO0               ; wait for reply
+  lda APUIO0               ; wait for reply
+  cmp #$D7
   bne WSPC700Reply
 
   ldx #0

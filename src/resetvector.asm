@@ -37,7 +37,12 @@ nmi:
     PHA
     PHX
     PHY
+    setAXY8
+
     jslb snes_nmi, $a0
+
+    jslb msu_nmi_check, $b2
+
     ; jump to NES NMI
     CLC
     LDA ACTIVE_NES_BANK
