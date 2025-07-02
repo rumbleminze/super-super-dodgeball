@@ -171,6 +171,51 @@ set_vm_increment_mode_1:
 ; |+-------- Emphasize green (red on PAL/Dendy)
 ; +--------- Emphasize blue
 ; 
+force_blank_no_store:
+    LDA INIDISP_STATE
+    ORA #$80
+    STA INIDISP
+    RTL
+    
+set_ppu_mask_to_00_no_store:
+    STZ TM
+    jslb force_blank_no_store, $a0
+    rtl
+
+set_ppu_mask_to_accumulator_without_store:
+    CMP #$00
+    BNE set_ppu_mask_to_accumulator
+    BRA set_ppu_mask_to_00_no_store
+  
+set_ppu_mask_to_accumulator:
+    PHA
+    AND #$18
+    CMP #$18
+    BNE :+
+        LDA #$11
+        BRA :++++
+:   CMP #$10
+    BNE :+
+        LDA #$10
+        BRA :+++
+:   CMP #$08
+    BNE :+
+        LDA #$01
+        BRA :++
+:   LDA #$00    
+:    
+    STA TM
+    beq :+
+        
+        LDA #$0F
+        STA INIDISP
+        pla
+        RTL
+    :
+
+    PLA
+    RTL  
+
 set_ppu_mask_to_1e:
     LDA #$1E
     BRA change_ppu_mask_status

@@ -27,6 +27,7 @@ play_track_hijack:
     STZ MSU_700_OVERWRITE
     STZ MSU_701_OVERWRITE
     STA $0701
+    LDA $701
     bne :+
     ; 00 is no sound, and the game takes care of stopping
     ; so we can return.  We'll also return 00 if we're going to play
@@ -45,13 +46,37 @@ play_track_hijack:
 :   
 ;   00 returned from msu_check, mute nsf and return the mute value
     jsr set_overwrites_if_needed
+    jsr mute_2a03
 
     PLA
     STZ $701
     LDA NSF_MUTE
 
     rtl
-
+mute_2a03:
+  STZ SOUND_EMULATOR_BUFFER_START
+  ; STZ SOUND_EMULATOR_BUFFER_START + $1
+  ; STZ SOUND_EMULATOR_BUFFER_START + $2
+  ; STZ SOUND_EMULATOR_BUFFER_START + $3
+  STZ SOUND_EMULATOR_BUFFER_START + $4
+  ; STZ SOUND_EMULATOR_BUFFER_START + $5
+  ; STZ SOUND_EMULATOR_BUFFER_START + $6
+  ; STZ SOUND_EMULATOR_BUFFER_START + $7
+  STZ SOUND_EMULATOR_BUFFER_START + $8
+  ; STZ SOUND_EMULATOR_BUFFER_START + $9
+  ; STZ SOUND_EMULATOR_BUFFER_START + $a
+  ; STZ SOUND_EMULATOR_BUFFER_START + $b
+  STZ SOUND_EMULATOR_BUFFER_START + $c
+  ; STZ SOUND_EMULATOR_BUFFER_START + $d
+  ; STZ SOUND_EMULATOR_BUFFER_START + $e
+  ; STZ SOUND_EMULATOR_BUFFER_START + $f
+  ; STZ SOUND_EMULATOR_BUFFER_START + $10
+  ; STZ SOUND_EMULATOR_BUFFER_START + $11
+  ; STZ SOUND_EMULATOR_BUFFER_START + $12
+  ; STZ SOUND_EMULATOR_BUFFER_START + $13
+  ; STZ SOUND_EMULATOR_BUFFER_START + $14
+  ; STZ SOUND_EMULATOR_BUFFER_START + $15
+  rts
 ; we need to set overwrites only if we have a timer waiting
 set_overwrites_if_needed:  
   PHB
@@ -506,10 +531,9 @@ decrement_timer_if_needed:
 ; E 	1E	Vs.	
 ; F 	22	Win	
 ; 10	23	Lost	
-; 11	2B	Final Win	
+; 11	2B	Final Win	- 378 FRAMES
 ; 12	2C	Credits	
 ; 13	20	Starting Match
-
 ; unused but marked as supported so it shuts off MSU when played
 
 
@@ -535,7 +559,7 @@ msu_track_lookup:
 
 ; this 0x100 byte lookup table maps the NSF track to the if it loops ($03) or no ($01)
 msu_track_loops:
-.byte $03, $03, $03, $03, $03, $03, $03, $03, $03, $03, $03, $01, $01, $03, $03, $01
+.byte $03, $03, $03, $03, $03, $03, $03, $03, $03, $03, $03, $01, $03, $03, $03, $01
 .byte $01, $01, $03, $01, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
@@ -588,10 +612,10 @@ track_timers:
 .addr no_timer            ; 
 .addr no_timer            ; 
 .addr no_timer            ; 
-.addr win_timer            ; Win
+.addr win_timer           ; Win
 
-.addr win_timer            ; Loss
-.addr no_timer            ; 
+.addr win_timer           ; Loss
+.addr final_win_timer     ; Championship Win
 .addr no_timer            ; 
 .addr pre_match_timer            ; 0x13 -  Pre-match jingle
 
@@ -606,3 +630,6 @@ pre_match_timer:
 
 win_timer:
 .word $016D, $0000
+
+final_win_timer:
+.word $017A, $0000

@@ -1,23 +1,29 @@
 .p816
 .smart
-
-.segment "ZEROPAGE"
-nmi_count: .res 2
-
 .include "macros.inc"
 .include "registers.inc"
 .include "vars.inc"
 .include "2a03_variables.inc"
+
 .include "2a03_emu_upload.asm"
+
+
+    ; .include "wram_routines.asm"
+    .include "wram_routines_v0.asm"
+
 .include "hiromheader.asm"
 
 .segment "CODE"
 .include "resetvector.asm"
 
 .segment "EMPTY_SPACE"
+
+
+; .include "dpcm_audio.asm"
+
 .include "2a03_emulator_first_8000.asm"
 ; .include "2a03_emulator_first_8000_v2.asm"
-.include "2a03_emulator_second_8000.asm"
+; .include "2a03_emulator_second_8000.asm"
 
 .include "bank-snes.asm"
 .include "bank0.asm"

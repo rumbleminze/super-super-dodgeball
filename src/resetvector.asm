@@ -9,19 +9,7 @@ TXS
 LDA #$A0
 PHA
 PLB
-jsl $A08000
-JML $A1FFE8
-
-; below is trash while I tested something
-mainloop:
-    lda nmi_count
-@nmi_check:
-	wai
-	cmp nmi_count
-	beq @nmi_check
-	php
-    plp
-    bra mainloop
+jml $A08000
 
 nmi:
     ; php
@@ -38,9 +26,8 @@ nmi:
     PHX
     PHY
     setAXY8
-
+    
     jslb snes_nmi, $a0
-
     jslb msu_nmi_check, $b2
 
     ; jump to NES NMI

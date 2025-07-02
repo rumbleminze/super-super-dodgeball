@@ -1,14 +1,21 @@
 
 intro_screen_data:
-.byte $A3, $21, $FA, $FC, $EB, $F3, $F2, $F3, $FC                       ; (c) 1989 
+.byte $A3, $20, $FA, $FC, $EB, $F3, $F2, $F3, $FC                       ; (c) 1989 
 .byte $e3, $d4, $d2, $d7, $dd, $de, $e2, $fc                            ; Technos
 .byte $d9, $d0, $df, $d0, $dd, $fc                                      ; Japan 
 .byte $d2, $de, $e1, $df, $ff                                           ; Corp
 
-.byte $A3, $22, $df, $de, $e1, $e3, $d4, $d3, $fc                        ; Ported 
+.byte $A3, $21, $df, $de, $e1, $e3, $d4, $d3, $fc                        ; Ported 
 .byte $d1, $e8, $fc                                                     ; by 
 .byte $e1, $e4, $dc, $d1, $db, $d4, $dc, $d8, $dd, $e9, $d4, $f7, $fc   ; Rumbleminze, 
 .byte $ec, $ea, $ec, $ed, $ff                                           ; 2023
+
+.byte $69, $22, $dc, $e2, $e4, $eb, $fc                 ; MSU1 TRACKS BY
+.byte $e3, $e1, $d0, $d2, $da, $e2, $fc
+.byte $d1, $e8, $ff                     
+.byte $a7, $22, $d0, $d0, $e1, $de, $dd, $fc            ; AARON LEHNEN 'MNG'
+.byte $db, $d4, $d7, $dd, $d4, $dd, $fc, $f4, $dc, $dd, $d6, $f4, $ff
+            
 
 .byte $05, $23, $EC, $D0, $EA, $ED, $FC                                 ; 2A03
 .byte $e2, $de, $e4, $dd, $d3, $fc                                      ; SOUND 
@@ -17,7 +24,7 @@ intro_screen_data:
 
 .byte $4C, $23, $dc, $d4, $dc, $d1, $db, $d4, $e1, $e2, $ff              ; MEMBLERS
 
-.byte $7B, $23, $e1, $d4, $e5, $eb, $ff ; Version (REV0)
+.byte $7B, $23, $e1, $d4, $e5, $ec, $ff ; Version (REV0)
 .byte $ff, $ff
 
 write_intro_palette:

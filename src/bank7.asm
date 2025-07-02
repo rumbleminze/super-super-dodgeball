@@ -1224,9 +1224,10 @@ RTS
   JSR $FF08
   
   ; setting PPU Mask to 0 is equivelent to TM
-  LDA #$00
-  STA $FE
-  STZ TM ; STA PpuMask_2001
+  jslb set_ppu_mask_to_0, $a0
+  ; LDA #$00
+  ; STA $FE
+  nops 3 ; STA PpuMask_2001
 
   JSR $FCB5
   LDX #$00
@@ -1619,8 +1620,8 @@ nops 18
 
 ; FA00 - bank 7
 .byte $AD, $F9, $BF, $8D, $D9, $06, $A9, $00, $20, $08, $FF
-
-  JSR new_sound_routine
+  
+  JSR $8003
   LDA $06D9
   JSR $FF08
   RTS

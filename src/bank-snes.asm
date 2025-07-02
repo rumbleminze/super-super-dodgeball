@@ -3,14 +3,12 @@
 init_routine:
   PHK 
   PLB 
+  
+  setAXY8
+  jmp zero_work_ram
   BRA initialize_registers
 
 initialize_registers:
-  setAXY16
-  setAXY8
-
-  jsr clear_buffers
-
   LDA #$80
   STA INIDISP
   STA INIDISP_STATE
@@ -161,6 +159,7 @@ initialize_registers:
   LDA #$00
   ; Enable overscan mode to approximate NES draw positions
   LDA #$04
+  LDA #$00
   STA SETINI
 
 
@@ -188,6 +187,7 @@ initialize_registers:
 
   jsl upload_sound_emulator_to_spc
 
+  jsr write_sound_wram_routines
   ; LDA #$A1
   ; PHA
   ; PLB   
@@ -242,9 +242,8 @@ initialize_registers:
 
 
 
-  JSR do_intro
-
-  RTL
+  JSR do_intro  
+  JML $A1FFE8
 
 
 
@@ -266,6 +265,9 @@ clearvm:
 	RTS
 
 snes_nmi:
+  LDA PPU_MASK_STATUS
+  jslb change_ppu_mask_status, $a0
+  jslb convert_audio, $a0
   LDA RDNMI
   JSR dma_oam_table  
   jslb hud_hdma_setup, $a0
@@ -434,16 +436,14 @@ bankswap_start:
   LDA VMAIN_STATUS
   STA VMAIN
 
-  LDA INIDISP_STATE
-  STA INIDISP
+  ; LDA INIDISP_STATE
+  ; STA INIDISP
 
   LDA NMITIMEN_STATUS
   STA NMITIMEN
 
   ; LDA #$11
   ; STA TM
-  ; LDA INIDISP_STATE
-  ; STA INIDISP
 
   RTL
 
@@ -491,6 +491,7 @@ new_data_bank:
   RTL
 
 bankswitch_obj_chr_data:
+
   ; this is a hack that happens to work most of the time.
   STZ NES_H_SCROLL
 
@@ -774,6 +775,71 @@ clear_buffers:
   DEY
   BNE :-
   RTS
+
+zero_work_ram:
+  LDA #$00
+  LDY #$00
+  LDX #$FF
+
+: LDA #$00
+  STA $0000, Y
+  STA $0100, Y
+  STA $0200, Y
+  STA $0300, Y
+  STA $0400, Y
+  STA $0500, Y
+  STA $0600, Y
+  STA $0700, Y
+  STA $0800, Y
+  STA $0900, Y
+  STA $0A00, Y
+  STA $0B00, Y
+  STA $0C00, Y
+  STA $0D00, Y
+  STA $0E00, Y
+  STA $0F00, Y
+  
+  STA $1000, Y
+  STA $1100, Y
+  STA $1200, Y
+  STA $1300, Y
+  STA $1400, Y
+  STA $1500, Y
+  STA $1600, Y
+  STA $1700, Y
+  
+  STA $1800, Y
+  STA $1900, Y
+  STA $1A00, Y
+  STA $1B00, Y
+  STA $1C00, Y
+  STA $1D00, Y
+  STA $1E00, Y
+  STA $1F00, Y
+  DEY
+  BNE :-
+  JMP initialize_registers
+  
+write_sound_wram_routines:
+LDY #$00
+:
+LDA wram_routines, Y
+STA $1C00, Y
+LDA wram_routines + $100, Y
+STA $1D00, Y
+LDA wram_routines + $200, Y
+STA $1E00, Y
+LDA wram_routines + $300, Y
+STA $1F00, Y
+
+INY
+BNE :-
+RTS
+
+wram_routines:
+; .incbin "wram_routines.bin"
+.incbin "wram_routines_v0.bin"
+
 
 game_type_arrow:
 .byte $E3, $20 ; $28
